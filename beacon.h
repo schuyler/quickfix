@@ -26,10 +26,9 @@ class Beacon {
     // int readingIndex(Point a);
     static Point leastSquares(Anchors a, Ranges r);
     static Ranges calculateRanges(Anchors a, Point x);
-    void expandAnchorSets(Queue &queue);
-    void estimatePosition();
     F meanSquaredError(Ranges R_hat);
-
+    void estimatePosition();
+    void expandAnchorSets(Queue &queue, F mseTarget);
   public:
     Beacon(const Bounds b) : Bound(b) {}
     Beacon(Anchors a, Ranges r) : A(a), R(r) {}
@@ -42,14 +41,16 @@ class Beacon {
         return Err < other.Err;
     }
 
-    Beacon &Fix(F rmsError);
+    Beacon Fix(F rmsError);
     void Anchor(AnchorID id, Point anchor);
     void Range(AnchorID id, F range);
 
     const Anchors AnchorSet() { return A; }
     const Ranges RangeSet() { return R; }
     const Point Position() { return X; }
+    void Position(const Point point) { X = point; }
     F Error() { return Err; }
+    void Error(F value) { Err = value; }
 };
 
 typedef Beacon<float, 2> Beacon2D;

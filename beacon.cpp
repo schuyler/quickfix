@@ -64,26 +64,6 @@ F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
 }
 
 template <typename F, int D>
-void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue) {
-    int n = A.rows() - 1;
-    for (int drop = 0; drop < A.rows(); drop++) {
-        Anchors a(n, D);
-        Ranges r(n);
-        Beacon b;
-
-        a << A.topRows(drop - 1),
-             A.bottomRows(n - drop);
-        r << R.topRows(drop - 1),
-             R.bottomRows(n - drop);
-        b = Beacon(a, r);
-        b.estimatePosition();
-        queue.push(b);
-    }
-}
-
-
-
-template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
     Ranges R_hat;
 
@@ -93,24 +73,54 @@ void Beacon<F,D>::estimatePosition() {
 }
 
 template <typename F, int D>
-Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
+void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F mseTarget) {
+    int n = A.rows() - 1;
+    for (int drop = 0; drop < A.rows(); drop++) {
+        Anchors a(n, D);
+        Ranges r(n);
+        Beacon b;
+
+        a.topRows(drop) = A.topRows(drop);
+        a.bottomRows(n - drop) = A.bottomRows(n - drop);
+
+        r.topRows(drop) = R.topRows(drop);
+        r.bottomRows(n - drop) = R.bottomRows(n - drop);
+
+        b = Beacon(a, r);
+        b.estimatePosition();
+        if (b < queue.top()) 
+            queue.push(b);
+        if (b.Err < mseTarget)
+            break;
+    }
+}
+
+template <typename F, int D>
+Beacon<F, D> Beacon<F, D>::Fix(F rmsError) {
     F mseTarget = rmsError * rmsError;
     Beacon best;
     Queue queue;
 
+    best.Error(1e9); // ensure that the first is best
     estimatePosition();
 
     queue.push(*this);
     while (!queue.empty()) {
         Beacon b = queue.top();
+        /*
+        std::cout << "- considering " << b.X <<
+                     " with " << b.A.rows() << " anchors " <<
+                     "(" << b.Err << " MSE)" << std::endl;
+         */
+        if (b.Err < mseTarget) return b;
         queue.pop();
-
         if (b > best) continue;
+        // std::cout << "- best so far: " << b.X << std::endl;
+        best = b;
+        if (b.A.rows() > D + 1)
+            b.expandAnchorSets(queue, mseTarget);
     }
-
-
-    // std::cout << "Fix: " << X << " " << Err << std::endl;
-    return *this;
+    return best;
 }
 
 template class Beacon<float, 2>;

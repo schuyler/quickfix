@@ -30,6 +30,8 @@ extern "C" {
     }
 
     void Beacon2D_Fix(Beacon2D *b, float rmsError) {
-        b->Fix(rmsError);
+        Beacon2D estimate = b->Fix(rmsError);
+        b->Position(estimate.Position());
+        b->Error(estimate.Error());
     }
 }

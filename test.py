@@ -37,8 +37,9 @@ def run_test(tag, actual_position, actual_ranges, noise_std=0.15, filtered=True,
     nlos_noise = generate_nlos_noise(shape)
     d("nlos noise:", nlos_noise)
     noisy_ranges = (actual_ranges + noise) * nlos_noise
+    #noisy_ranges = actual_ranges + noise
 
-    for i, r in enumerate(actual_ranges):
+    for i, r in enumerate(noisy_ranges):
         tag.range(i, r)
 
     guess, mse = tag.fix(18.)
@@ -46,7 +47,7 @@ def run_test(tag, actual_position, actual_ranges, noise_std=0.15, filtered=True,
     d("act:", actual_position, "upd:", guess, "err:", round(error, 6))
     return error, np.sqrt(mse)
 
-def run_tests(m=1000, n_anchors=7, noise=0.05, debug=False):
+def run_tests(m=50000, n_anchors=7, noise=0.05, debug=False):
     dim = 2
     bounds = [[-1000., -500.], [1000., 500.]]
     noise = 6.

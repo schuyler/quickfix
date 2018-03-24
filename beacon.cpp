@@ -1,5 +1,6 @@
 #include "beacon.h"
 #include <queue>
+#include <iostream>
 
 /*
 template <typename F, int D>
@@ -15,9 +16,10 @@ int Beacon<F, D>::readingIndex(Beacon::Point a) {
 
 template <typename F, int D>
 void Beacon<F, D>::Anchor(AnchorID id, Point anchor) {
+    // FIXME: this whole resize business isn't the right way to go
     if (id >= A.rows()) {
-        A.resize(id, Eigen::NoChange);
-        R.resize(id);
+        A.conservativeResize(id + 1, Eigen::NoChange);
+        R.conservativeResize(id + 1);
     } 
     A.row(id) = anchor;
 }
@@ -44,7 +46,11 @@ typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(
                 A.array().pow(2.0).matrix().rowwise().sum() -
                 R.array().pow(2.0).matrix()
         );
-    return G.householderQr().solve(h);
+
+    Matrix<F, Dynamic, 1> x = G.householderQr().solve(h);
+    // Turn the [3, 1] solution matrix into a [1, 2] vector
+    Map<Point> y(x.data(), x.size() - 1);
+    return y;
 }
 
 template <typename F, int D>
@@ -65,6 +71,7 @@ Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
     X = leastSquares(A, R);
     R_hat = calculateRanges(A, X);
     Err = meanSquaredError(R_hat);
+    // std::cout << "Fix: " << X << " " << Err << std::endl;
     return *this;
 }
 

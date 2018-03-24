@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <vector>
+#include <queue>
 
 using namespace Eigen;
 
@@ -12,7 +13,8 @@ class Beacon {
     typedef Array<F, 2, D> Bounds;
     typedef Matrix<F, Dynamic, D> Anchors;
     typedef Matrix<F, Dynamic, 1> Ranges;
-    typedef std::vector<Beacon<F,D> > Container;
+    typedef std::vector<Beacon> Container;
+    typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Queue;
 
   protected:
     Anchors A;
@@ -24,19 +26,23 @@ class Beacon {
     // int readingIndex(Point a);
     static Point leastSquares(Anchors a, Ranges r);
     static Ranges calculateRanges(Anchors a, Point x);
+    void expandAnchorSets(Queue &queue);
+    void estimatePosition();
     F meanSquaredError(Ranges R_hat);
 
   public:
-    Beacon(const Bounds b) { Bound = b; }
+    Beacon(const Bounds b) : Bound(b) {}
+    Beacon(Anchors a, Ranges r) : A(a), R(r) {}
     Beacon() {}
 
-    bool operator< (const Beacon<F, D> &other) const {
-        // NB: Ordinarily the sense of this would be < but we want _lower_
-        // error items to come up first in the priority queue.
+    bool operator> (const Beacon &other) const {
         return Err > other.Err;
     }
+    bool operator< (const Beacon &other) const {
+        return Err < other.Err;
+    }
 
-    Beacon<F,D> &Fix(F rmsError);
+    Beacon &Fix(F rmsError);
     void Anchor(AnchorID id, Point anchor);
     void Range(AnchorID id, F range);
 

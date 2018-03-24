@@ -1,5 +1,5 @@
 #include "beacon.h"
-#include <algorithm>
+#include <queue>
 #include <iostream>
 
 /*
@@ -64,22 +64,50 @@ F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
 }
 
 template <typename F, int D>
-Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
-    F mseTarget = rmsError * rmsError;
-    Container queue;
+void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue) {
+    int n = A.rows() - 1;
+    for (int drop = 0; drop < A.rows(); drop++) {
+        Anchors a(n, D);
+        Ranges r(n);
+        Beacon b;
+
+        a << A.topRows(drop - 1),
+             A.bottomRows(n - drop);
+        r << R.topRows(drop - 1),
+             R.bottomRows(n - drop);
+        b = Beacon(a, r);
+        b.estimatePosition();
+        queue.push(b);
+    }
+}
+
+
+
+template <typename F, int D>
+void Beacon<F,D>::estimatePosition() {
     Ranges R_hat;
 
     X = leastSquares(A, R);
     R_hat = calculateRanges(A, X);
     Err = meanSquaredError(R_hat);
+}
 
-    queue.push_back(*this);
+template <typename F, int D>
+Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
+    F mseTarget = rmsError * rmsError;
+    Beacon best;
+    Queue queue;
+
+    estimatePosition();
+
+    queue.push(*this);
     while (!queue.empty()) {
-        Beacon<F, D> b;
-        std::pop_heap(queue.begin(), queue.end());
-        b = queue.back();
-        queue.pop_back();
+        Beacon b = queue.top();
+        queue.pop();
+
+        if (b > best) continue;
     }
+
 
     // std::cout << "Fix: " << X << " " << Err << std::endl;
     return *this;

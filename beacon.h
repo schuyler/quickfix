@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <vector>
 
 using namespace Eigen;
 
@@ -29,7 +30,7 @@ class Beacon {
     Beacon(const Bounds b) { Bound = b; }
     Beacon() {}
 
-    bool operator< (Beacon<F, D> other) {
+    bool operator< (const Beacon<F, D> &other) const {
         // NB: Ordinarily the sense of this would be < but we want _lower_
         // error items to come up first in the priority queue.
         return Err > other.Err;

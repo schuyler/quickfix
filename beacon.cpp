@@ -1,5 +1,5 @@
 #include "beacon.h"
-#include <queue>
+#include <algorithm>
 #include <iostream>
 
 /*
@@ -65,12 +65,22 @@ F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
 
 template <typename F, int D>
 Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
-    // F mseTarget = rmsError * rmsError;
-    // Container queue;
+    F mseTarget = rmsError * rmsError;
+    Container queue;
     Ranges R_hat;
+
     X = leastSquares(A, R);
     R_hat = calculateRanges(A, X);
     Err = meanSquaredError(R_hat);
+
+    queue.push_back(*this);
+    while (!queue.empty()) {
+        Beacon<F, D> b;
+        std::pop_heap(queue.begin(), queue.end());
+        b = queue.back();
+        queue.pop_back();
+    }
+
     // std::cout << "Fix: " << X << " " << Err << std::endl;
     return *this;
 }

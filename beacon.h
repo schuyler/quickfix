@@ -35,14 +35,14 @@ class Beacon {
         return Err > other.Err;
     }
 
-    const Point Fix(F rmsError);
+    Beacon<F,D> &Fix(F rmsError);
     void Anchor(AnchorID id, Point anchor);
     void Range(AnchorID id, F range);
 
     const Anchors AnchorSet() { return A; }
     const Ranges RangeSet() { return R; }
     const Point Position() { return X; }
-    // const F RMSError();
+    F Error() { return Err; }
 };
 
 typedef Beacon<float, 2> Beacon2D;

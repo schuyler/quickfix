@@ -58,14 +58,14 @@ F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
 }
 
 template <typename F, int D>
-const typename Beacon<F, D>::Point Beacon<F, D>::Fix(F rmsError) {
+Beacon<F, D>& Beacon<F, D>::Fix(F rmsError) {
     // F mseTarget = rmsError * rmsError;
     // Container queue;
     Ranges R_hat;
     X = leastSquares(A, R);
     R_hat = calculateRanges(A, X);
     Err = meanSquaredError(R_hat);
-    return X;
+    return *this;
 }
 
 template class Beacon<float, 2>;

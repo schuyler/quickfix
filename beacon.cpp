@@ -47,7 +47,14 @@ typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(
                 R.array().pow(2.0).matrix()
         );
 
-    Matrix<F, Dynamic, 1> x = G.householderQr().solve(h);
+    HouseholderQR<MatrixXf> qr = G.householderQr();
+    Matrix<F, Dynamic, 1> x = qr.solve(h);
+    /*
+    if (qr.rank() != 3) {
+        std::cout << "> rank: " << qr.rank() << "\n";
+    }
+    */
+    // G.colPivHouseholderQr().solve(h);
     // Turn the [3, 1] solution matrix into a [1, 2] vector
     Map<Point> y(x.data(), x.size() - 1);
     return y;
@@ -64,16 +71,27 @@ F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
 }
 
 template <typename F, int D>
-void Beacon<F,D>::estimatePosition() {
+void Beacon<F, D>::estimateError() {
     Ranges R_hat;
-
-    X = leastSquares(A, R);
     R_hat = calculateRanges(A, X);
     Err = meanSquaredError(R_hat);
 }
 
 template <typename F, int D>
-void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F mseTarget) {
+void Beacon<F,D>::estimatePosition() {
+    X = leastSquares(A, R);
+    estimateError();
+}
+
+template <typename F, int D>
+void Beacon<F,D>::clipToBound() {
+    X = X.max(Bound.row(0).array())
+         .min(Bound.row(1).array());
+    estimateError();
+}
+
+template <typename F, int D>
+void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseTarget) {
     int n = A.rows() - 1;
     for (int drop = 0; drop < A.rows(); drop++) {
         Anchors a(n, D);
@@ -86,12 +104,15 @@ void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F mseTarget) {
         r.topRows(drop) = R.topRows(drop);
         r.bottomRows(n - drop) = R.bottomRows(n - drop);
 
-        b = Beacon(a, r);
+        b = Beacon(Bound, a, r);
         b.estimatePosition();
-        if (b < queue.top()) 
+
+        if (b.Err < bestMse) {
             queue.push(b);
-        if (b.Err < mseTarget)
+        }
+        if (b.Err <= mseTarget) {
             break;
+        }
     }
 }
 
@@ -101,25 +122,37 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) {
     Beacon best;
     Queue queue;
 
-    best.Error(1e9); // ensure that the first is best
     estimatePosition();
-
     queue.push(*this);
+
     while (!queue.empty()) {
         Beacon b = queue.top();
         /*
         std::cout << "- considering " << b.X <<
                      " with " << b.A.rows() << " anchors " <<
                      "(" << b.Err << " MSE)" << std::endl;
-         */
-        if (b.Err < mseTarget) return b;
+        */
         queue.pop();
-        if (b > best) continue;
-        // std::cout << "- best so far: " << b.X << std::endl;
-        best = b;
-        if (b.A.rows() > D + 1)
-            b.expandAnchorSets(queue, mseTarget);
+        if (b.Err <= mseTarget) {
+            best = b;
+            break;
+        }
+        if (b < best) best = b;
+        /*
+        std::cout << "- best so far: " << b.X << " (" << b.Err << ")" << std::endl;
+        */
+        if (b.A.rows() > D + 1) {
+            b.expandAnchorSets(queue, best.Err, mseTarget);
+        }
     }
+    /*
+    if (best.Err < mseTarget) {
+        std::cout << "= selected: " << best.X << " (" << best.Err << ")" << std::endl;
+    } else {
+        std::cout << "? accepted: " << best.X << " (" << best.Err << ")" << std::endl;
+    }
+    */
+    best.clipToBound();
     return best;
 }
 

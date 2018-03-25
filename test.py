@@ -27,7 +27,7 @@ def generate_nlos_noise(shape, factor=1.):
 def distance(a, b):
     return np.linalg.norm(a - b)
 
-def run_test(tag, actual_position, actual_ranges, noise_std=0.15, filtered=True, debug=False):
+def run_test(tag, actual_position, actual_ranges, bounds, noise_std=0.15, filtered=True, debug=False):
     def d(*args):
         if debug: print " ".join(map(repr, args))
     shape = actual_ranges.shape
@@ -43,11 +43,19 @@ def run_test(tag, actual_position, actual_ranges, noise_std=0.15, filtered=True,
         tag.range(i, r)
 
     guess, mse = tag.fix(18.)
+    if guess[0] == bounds[0][0] or \
+       guess[1] == bounds[0][1] or \
+       guess[0] == bounds[1][1] or \
+       guess[1] == bounds[1][1]:
+           pass
+           #print "stop:", guess
+           #raise
+
     error = distance(guess, actual_position)
     d("act:", actual_position, "upd:", guess, "err:", round(error, 6))
     return error, np.sqrt(mse)
 
-def run_tests(m=50000, n_anchors=7, noise=0.05, debug=False):
+def run_tests(m=10000, n_anchors=7, noise=0.05, debug=False):
     dim = 2
     bounds = [[-1000., -500.], [1000., 500.]]
     noise = 6.
@@ -60,10 +68,10 @@ def run_tests(m=50000, n_anchors=7, noise=0.05, debug=False):
         actual_ranges = compute_actual_ranges(actual_position, anchors)
 
         try:
-            tag = Beacon2D()
+            tag = Beacon2D(bounds)
             for i, a in enumerate(anchors):
                 tag.anchor(i, a)
-            err, rms_err = run_test(tag, actual_position, actual_ranges, noise, debug)
+            err, rms_err = run_test(tag, actual_position, actual_ranges, bounds, noise, debug)
             errors.append(err)
             rms_errors.append(rms_err)
         except Exception, e:

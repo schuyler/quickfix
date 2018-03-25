@@ -29,11 +29,13 @@ class Beacon {
     static Ranges calculateRanges(Anchors a, Point x);
     F meanSquaredError(Ranges R_hat);
     void estimatePosition();
-    void expandAnchorSets(Queue &queue, F mseTarget);
+    void estimateError();
+    void clipToBound();
+    void expandAnchorSets(Queue &queue, F bestMse, F mseTarget);
   public:
     // TODO: Tidy up the constructors
     Beacon(const Bounds b) : Bound(b) { init(); }
-    Beacon(Anchors a, Ranges r) : A(a), R(r) { init(); }
+    Beacon(const Bounds b, Anchors a, Ranges r) : A(a), R(r), Bound(b) { init(); }
     Beacon() { init(); }
     void init() {
         Err = std::numeric_limits<F>::infinity();

@@ -3,7 +3,7 @@ from ctypes import *
 
 lib = cdll.LoadLibrary("./libquickfix.so")
 
-lib.Beacon2D_new.argtypes = []
+lib.Beacon2D_new.argtypes = [c_float] * 4
 lib.Beacon2D_new.restype = c_void_p
 
 lib.Beacon2D_Range.argtypes = [c_void_p, c_int, c_float]
@@ -25,8 +25,10 @@ lib.Beacon2D_Error.argtypes = [c_void_p]
 lib.Beacon2D_Error.restype = c_float
 
 class Beacon2D(object):
-    def __init__(self):
-        self.obj = lib.Beacon2D_new()
+    def __init__(self, bound):
+        # bound is a pair of array-likes, min and max
+        bound = map(float, bound[0] + bound[1])
+        self.obj = lib.Beacon2D_new(*bound)
 
     def range(self, id_, r):
         lib.Beacon2D_Range(self.obj, id_, r)

@@ -1,6 +1,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <queue>
+#include <limits>
 
 using namespace Eigen;
 
@@ -30,10 +31,16 @@ class Beacon {
     void estimatePosition();
     void expandAnchorSets(Queue &queue, F mseTarget);
   public:
-    Beacon(const Bounds b) : Bound(b) {}
-    Beacon(Anchors a, Ranges r) : A(a), R(r) {}
-    Beacon() {}
-
+    // TODO: Tidy up the constructors
+    Beacon(const Bounds b) : Bound(b) { init(); }
+    Beacon(Anchors a, Ranges r) : A(a), R(r) { init(); }
+    Beacon() { init(); }
+    void init() {
+        Err = std::numeric_limits<F>::infinity();
+    }
+    bool operator== (const Beacon &other) const {
+        return Err == other.Err;
+    }
     bool operator> (const Beacon &other) const {
         return Err > other.Err;
     }
@@ -45,8 +52,8 @@ class Beacon {
     void Anchor(AnchorID id, Point anchor);
     void Range(AnchorID id, F range);
 
-    const Anchors AnchorSet() { return A; }
-    const Ranges RangeSet() { return R; }
+    const Anchors AnchorMatrix() { return A; }
+    const Ranges RangeVector() { return R; }
     const Point Position() { return X; }
     void Position(const Point point) { X = point; }
     F Error() { return Err; }

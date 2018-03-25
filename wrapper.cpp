@@ -1,10 +1,13 @@
 #include "beacon.h"
+#include <iostream>
 
 typedef Beacon<float, 2> Beacon2D;
 
 extern "C" {
-    Beacon2D *Beacon2D_new() {
-        return new Beacon2D();
+    Beacon2D *Beacon2D_new(float minX, float minY, float maxX, float maxY) {
+        Beacon2D::Bounds bound;
+        bound << minX, minY, maxX, maxY;
+        return new Beacon2D(bound);
     }
 
     void Beacon2D_Anchor(Beacon2D *b, AnchorID id, float x, float y) {

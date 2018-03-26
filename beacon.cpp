@@ -79,7 +79,8 @@ void Beacon<F, D>::estimateError() {
 
 template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
-    X = leastSquares(A, R);
+    //X = leastSquares(A, R);
+    X = solveNonLinear(A, R);
     estimateError();
 }
 
@@ -154,6 +155,29 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) {
     */
     best.clipToBound();
     return best;
+}
+
+template <typename F, int D>
+int Beacon<F,D>::NonLinearFunctor::operator()(const Point &X_hat, Ranges &fvec) const {
+    Ranges R_hat = Beacon::calculateRanges(A, X_hat);
+    fvec << (R - R_hat);
+    return 0;
+}
+
+// https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L553
+template <typename F, int D>
+typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(
+        Beacon<F, D>::Anchors A,
+        Beacon<F, D>::Ranges R) {
+
+    Beacon::NonLinearFunctor functor(A, R);
+    NumericalDiff<Beacon::NonLinearFunctor> numDiff(functor);
+    LevenbergMarquardt<NumericalDiff<Beacon::NonLinearFunctor>, F> lm(numDiff);
+
+    Point x0 = Beacon::leastSquares(A, R);
+    typename Beacon::NonLinearFunctor::InputType x = x0.matrix().transpose();
+    lm.minimize(x);
+    return x;
 }
 
 template class Beacon<float, 2>;

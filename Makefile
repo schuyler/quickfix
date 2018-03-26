@@ -1,5 +1,6 @@
 CXX_INCLUDES=-I/usr/local/include/eigen3
 CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG
+#CXX_FLAGS=-march=native -Wall -Ofast
 
 all: libquickfix.so
 

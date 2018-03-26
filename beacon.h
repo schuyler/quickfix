@@ -1,4 +1,5 @@
 #include <Eigen/Dense>
+#include <unsupported/Eigen/NonLinearOptimization>
 #include <vector>
 #include <queue>
 #include <limits>
@@ -17,6 +18,26 @@ class Beacon {
     typedef std::vector<Beacon> Container;
     typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Queue;
 
+    class NonLinearFunctor {
+        // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L528
+        const Anchors &A;
+        const Ranges &R;
+      public:
+        typedef F Scalar;
+        typedef Matrix<F, Dynamic, 1> InputType;
+        typedef Ranges ValueType;
+        typedef Matrix<F, Dynamic, Dynamic> JacobianType;
+        enum {
+            InputsAtCompileTime = D,
+            ValuesAtCompileTime = Dynamic
+        };
+
+        NonLinearFunctor(const Anchors &a, const Ranges &r) : A(a), R(r) {}
+        int inputs() const { return D; }
+        int values() const { return R.rows(); }
+        int operator()(const Point &x, Ranges &fvec) const;
+    };
+
   protected:
     Anchors A;
     Ranges R;
@@ -26,6 +47,7 @@ class Beacon {
 
     // int readingIndex(Point a);
     static Point leastSquares(Anchors a, Ranges r);
+    static Point solveNonLinear(Anchors a, Ranges r);
     static Ranges calculateRanges(Anchors a, Point x);
     F meanSquaredError(Ranges R_hat);
     void estimatePosition();

@@ -55,7 +55,7 @@ def run_test(tag, actual_position, actual_ranges, bounds, noise_std=0.15, filter
     d("act:", actual_position, "upd:", guess, "err:", round(error, 6))
     return error, np.sqrt(mse)
 
-def run_tests(m=50000, n_anchors=7, noise=0.05, debug=False):
+def run_tests(m=10000, n_anchors=7, noise=0.05, debug=False):
     dim = 2
     bounds = [[-1000., -500.], [1000., 500.]]
     noise = 6.
@@ -85,6 +85,7 @@ if __name__ == "__main__":
     start = time.time()
     n, mean, std, rms_mean, rms_std = run_tests()
     elapsed = time.time() - start
+    print "tests run:", n
     print "mean err:", mean
     print "err std dev:", std
     print "mean RMS err:", rms_mean

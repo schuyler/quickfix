@@ -1,7 +1,7 @@
 import numpy as np
 from ctypes import *
 
-lib = cdll.LoadLibrary("./libquickfix.so")
+lib = cdll.LoadLibrary("../build/libquickfix.so")
 
 lib.Beacon2D_new.argtypes = [c_float] * 4
 lib.Beacon2D_new.restype = c_void_p

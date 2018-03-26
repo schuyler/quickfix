@@ -15,6 +15,9 @@ lib.Beacon2D_Anchor.restype = None
 lib.Beacon2D_Fix.argtypes = [c_void_p, c_float]
 lib.Beacon2D_Fix.restype = None
 
+lib.Beacon2D_Update.argtypes = [c_void_p, c_float]
+lib.Beacon2D_Update.restype = c_bool
+
 lib.Beacon2D_X.argtypes = [c_void_p]
 lib.Beacon2D_X.restype = c_float
 
@@ -42,3 +45,6 @@ class Beacon2D(object):
         y = lib.Beacon2D_Y(self.obj)
         mse = lib.Beacon2D_Error(self.obj)
         return np.array((x, y)), mse
+
+    def update(self, rms_err):
+        lib.Beacon2D_Update(self.obj, rms_err)

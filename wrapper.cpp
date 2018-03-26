@@ -37,4 +37,8 @@ extern "C" {
         b->Position(estimate.Position());
         b->Error(estimate.Error());
     }
+
+    bool Beacon2D_Update(Beacon2D *b, float rmsThreshold) {
+        return b->Update(rmsThreshold);
+    }
 }

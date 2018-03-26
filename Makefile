@@ -1,13 +1,13 @@
 EIGEN_INCLUDE=$(shell pkg-config --cflags eigen3)
 CXX_INCLUDES=$(EIGEN_INCLUDE) -Iinclude
-CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG
+CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG -MMD
 
 SRC=$(wildcard src/*.cpp)
-OBJ=$(SRC:.cpp=.o)
+OBJ=$(patsubst src/%,build/%,$(SRC:.cpp=.o))
 
 all: build/libquickfix.so build/libquickfix.a
 
-%.o: %.cpp
+build/%.o: src/%.cpp
 	g++ $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -c $< -o $@
 
 build/libquickfix.so: $(OBJ)
@@ -20,6 +20,8 @@ test: build/libquickfix.so
 	cd test && python test.py
 
 clean:
-	rm -f src/*.o build/* test/*.pyc
+	rm -f build/* test/*.pyc
+
+-include $(OBJ:%.o=%.d)
 
 .PHONY: test clean

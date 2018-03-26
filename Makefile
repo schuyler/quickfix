@@ -1,5 +1,5 @@
 EIGEN_INCLUDE=$(shell pkg-config --cflags eigen3)
-CXX_INCLUDES=$(EIGEN_INCLUDE)
+CXX_INCLUDES=$(EIGEN_INCLUDE) -Iinclude
 CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG
 
 SRC=$(wildcard src/*.cpp)

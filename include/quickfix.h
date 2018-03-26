@@ -23,8 +23,7 @@ class Beacon {
 
     class NonLinearFunctor {
         // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L528
-        const Anchors &A;
-        const Ranges &R;
+        const Beacon &B;
       public:
         typedef F Scalar;
         typedef Matrix<F, Dynamic, 1> InputType;
@@ -35,9 +34,9 @@ class Beacon {
             ValuesAtCompileTime = Dynamic
         };
 
-        NonLinearFunctor(const Anchors &a, const Ranges &r) : A(a), R(r) {}
+        NonLinearFunctor(const Beacon &b) : B(b) {}
         int inputs() const { return D; }
-        int values() const { return R.rows(); }
+        int values() const { return B.R.rows(); }
         int operator()(const Point &x, Ranges &fvec) const;
     };
 
@@ -47,12 +46,13 @@ class Beacon {
     Point X;
     Bounds Bound;
     F Err;
+    bool Located;
 
     void checkSize(int i);
     int findRow(const Point &anchor) const;
 
     static Point leastSquares(const Anchors &a, const Ranges &r);
-    static Point solveNonLinear(const Anchors &a, const Ranges &r);
+    static Point solveNonLinear(const Beacon &b);
     static Ranges calculateRanges(const Anchors &a, const Point &x);
     F meanSquaredError(const Ranges &R_hat) const;
 
@@ -66,6 +66,7 @@ class Beacon {
     Beacon() { init(); }
     void init() {
         Err = std::numeric_limits<F>::infinity();
+        Located = false;
     }
     bool operator== (const Beacon &other) const {
         return Err == other.Err;

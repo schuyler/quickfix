@@ -31,19 +31,24 @@ typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(const Anchors &A, const R
 
 template <typename F, int D>
 int Beacon<F,D>::NonLinearFunctor::operator()(const Point &X_hat, Ranges &fvec) const {
-    Ranges R_hat = Beacon::calculateRanges(A, X_hat);
-    fvec << (R - R_hat);
+    Ranges R_hat = Beacon::calculateRanges(B.A, X_hat);
+    fvec << (B.R - R_hat);
     return 0;
 }
 
 // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L553
 template <typename F, int D>
-typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(const Anchors &A, const Ranges &R) {
-    Beacon::NonLinearFunctor functor(A, R);
+typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(const Beacon &B) {
+    Beacon::NonLinearFunctor functor(B);
     NumericalDiff<Beacon::NonLinearFunctor> numDiff(functor);
     LevenbergMarquardt<NumericalDiff<Beacon::NonLinearFunctor>, F> lm(numDiff);
 
-    Point x0 = Beacon::leastSquares(A, R);
+    Point x0;
+    if (B.Located) {
+        x0 = Beacon::leastSquares(B.A, B.R);
+    } else {
+        x0 = B.X;
+    }
     typename Beacon::NonLinearFunctor::InputType x = x0.matrix().transpose();
     lm.minimize(x);
     return x;

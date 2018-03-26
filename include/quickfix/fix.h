@@ -16,7 +16,8 @@ void Beacon<F, D>::estimateError() {
 template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
     // X = leastSquares(A,R);
-    X = solveNonLinear(A, R);
+    X = solveNonLinear(*this);
+    Located = true;
     estimateError();
 }
 

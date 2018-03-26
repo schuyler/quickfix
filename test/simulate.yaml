@@ -1,11 +1,12 @@
-runs: 10000
+runs: 100
 bounds:
     - - -1000.0
       - -500.0
     - - 1000.0
       - 500.0
 anchors: 7
+mean_readings: 4
 sensor_noise: 6.0
-nlos_noise: 1.0
-rmse: 18.0
-debug: true
+nlos_noise: 0.0
+rmse: 72.0
+target_speed: 60.0

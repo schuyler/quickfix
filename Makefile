@@ -1,6 +1,9 @@
 EIGEN_INCLUDE=$(shell pkg-config --cflags eigen3)
 CXX_INCLUDES=$(EIGEN_INCLUDE) -Iinclude
-CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG -MMD
+CXX_FLAGS=-MMD -Wall
+CXX_FLAGS+=-DNDEBUG -Ofast
+# -march=native works great on MacOS but gets a little weird on Linux?
+# CXX_FLAGS += -march=native
 
 SRC=$(wildcard src/*.cpp)
 OBJ=$(patsubst src/%,build/%,$(SRC:.cpp=.o))
@@ -8,10 +11,11 @@ OBJ=$(patsubst src/%,build/%,$(SRC:.cpp=.o))
 all: build/libquickfix.so build/libquickfix.a
 
 build/%.o: src/%.cpp
+	@mkdir -p build
 	g++ $(CXX_INCLUDES) $(CXX_FLAGS) -fPIC -c $< -o $@
 
 build/libquickfix.so: $(OBJ)
-	g++ -shared -W1,-soname,libquickfix.so -o $@ $^
+	g++ -shared -o $@ $^
 
 build/libquickfix.a: $(OBJ)
 	ar rvs $@ $<

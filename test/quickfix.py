@@ -12,6 +12,9 @@ lib.Beacon2D_Range.restype = None
 lib.Beacon2D_Anchor.argtypes = [c_void_p, c_int, c_float, c_float]
 lib.Beacon2D_Anchor.restype = None
 
+lib.Beacon2D_Reading.argtypes = [c_void_p, c_float, c_float, c_float]
+lib.Beacon2D_Reading.restype = None
+
 lib.Beacon2D_Fix.argtypes = [c_void_p, c_float]
 lib.Beacon2D_Fix.restype = None
 
@@ -34,10 +37,13 @@ class Beacon2D(object):
         self.obj = lib.Beacon2D_new(*bound)
 
     def range(self, id_, r):
-        lib.Beacon2D_Range(self.obj, id_, r)
+        lib.Beacon2D_Range(self.obj, id_, float(r))
 
     def anchor(self, id_, xy):
         lib.Beacon2D_Anchor(self.obj, id_, float(xy[0]), float(xy[1]))
+
+    def reading(self, xy, r):
+        lib.Beacon2D_Anchor(self.obj, float(xy[0]), float(xy[1]), float(r))
 
     def fix(self, rms_err):
         lib.Beacon2D_Fix(self.obj, rms_err)

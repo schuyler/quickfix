@@ -7,14 +7,20 @@ extern "C" {
         return new Beacon2D(bound);
     }
 
-    void Beacon2D_Anchor(Beacon2D *b, AnchorID id, float x, float y) {
+    void Beacon2D_Anchor(Beacon2D *b, int id, float x, float y) {
         Beacon2D::Point p;
         p << x, y;
         b->Anchor(id, p);
     }
 
-    void Beacon2D_Range(Beacon2D *b, AnchorID id, float r) {
+    void Beacon2D_Range(Beacon2D *b, int id, float r) {
         b->Range(id, r);
+    }
+
+    void Beacon2D_Reading(Beacon2D *b, float x, float y, float r) {
+        Beacon2D::Point p;
+        p << x, y;
+        b->Reading(p, r);
     }
 
     float Beacon2D_X(Beacon2D *b) {

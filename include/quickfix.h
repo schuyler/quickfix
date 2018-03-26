@@ -48,11 +48,14 @@ class Beacon {
     Bounds Bound;
     F Err;
 
-    // int readingIndex(Point a);
+    void checkSize(int i);
+    int findRow(const Point anchor);
+
     static Point leastSquares(Anchors a, Ranges r);
     static Point solveNonLinear(Anchors a, Ranges r);
     static Ranges calculateRanges(Anchors a, Point x);
     F meanSquaredError(Ranges R_hat);
+
     void estimatePosition();
     void estimateError();
     void clipToBound();
@@ -75,8 +78,9 @@ class Beacon {
         return Err < other.Err;
     }
 
-    void Anchor(AnchorID id, Point anchor);
-    void Range(AnchorID id, F range);
+    void Anchor(int i, Point anchor);
+    void Range(int i, F range);
+    int Reading(Point anchor, F range);
     Beacon Fix(F rmsError);
     bool Update(F rmsThreshold);
 

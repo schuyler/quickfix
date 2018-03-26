@@ -30,6 +30,9 @@ lib.Beacon2D_Y.restype = c_float
 lib.Beacon2D_Error.argtypes = [c_void_p]
 lib.Beacon2D_Error.restype = c_float
 
+lib.Beacon2D_Anchors.argtypes = [c_void_p]
+lib.Beacon2D_Anchors.restype = c_int
+
 class Beacon2D(object):
     def __init__(self, bound):
         # bound is a pair of array-likes, min and max
@@ -59,3 +62,6 @@ class Beacon2D(object):
 
     def error(self):
         return lib.Beacon2D_Error(self.obj)
+
+    def anchors(self):
+        return lib.Beacon2D_Anchors(self.obj)

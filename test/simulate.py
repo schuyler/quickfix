@@ -46,30 +46,38 @@ class Environment(object):
         r_ = (r + s_noise) * n_noise
         return self.anchors[i], r_
 
-    def run_tick(self):
+    def run_tick(self, dump):
         self.target.move()
-        n = len(self.anchors) #int(min(np.random.normal(self.mean_readings), 1))
+        n = int(min(np.random.normal(self.mean_readings), 1))
         for _ in range(n):
             anchor, rng = self.get_reading()
             self.tag.reading(anchor, rng)
+        pre_anchors = self.tag.anchors()
         self.tag.update(self.mse_target)
         err = distance(self.target.position, self.tag.position())
         rms = math.sqrt(self.tag.error())
-        print "X:", self.target.position, "T:", self.tag.position(), "E:", err, "M:", rms
-        self.err.append(err)
-        self.rms.append(rms)
+        if dump:
+            print "X: %s T: %s E: %-7.3f M: %-7.3f A: %2d/%2d" % (
+                    self.target.position,
+                    self.tag.position(),
+                    err, rms, self.tag.anchors(), pre_anchors)
+        if rms < 1e9:
+            self.err.append(err)
+            self.rms.append(rms)
 
-    def run(self, ticks):
+    def run(self, ticks, dump):
         for _ in range(ticks):
-            self.run_tick()
+            self.run_tick(dump)
         return np.mean(self.err), np.std(self.err), np.mean(self.rms), np.std(self.rms)
 
 if __name__ == "__main__":
+    np.set_printoptions(precision=3)
     cfg = yaml.load(open("simulate.yaml", "r"))
     ticks = cfg.pop("runs", 10000)
+    dump = cfg.pop("dump", False)
     env = Environment(**cfg)
     start = time.time()
-    mean, std, mse_mean, mse_std = env.run(ticks)
+    mean, std, mse_mean, mse_std = env.run(ticks, dump)
     elapsed = time.time() - start
     print "ticks run:", ticks
     print "mean err:", mean

@@ -35,8 +35,13 @@ extern "C" {
         return b->Error();
     }
 
+    int Beacon2D_Anchors(Beacon2D *b) {
+        return b->AnchorMatrix().rows();
+    }
+
     void Beacon2D_Fix(Beacon2D *b, float rmsError) {
         Beacon2D estimate = b->Fix(rmsError);
+        // TODO: take these out and return the values
         b->Position(estimate.Position());
         b->Error(estimate.Error());
     }

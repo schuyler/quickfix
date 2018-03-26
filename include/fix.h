@@ -15,6 +15,7 @@ void Beacon<F, D>::estimateError() {
 
 template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
+    // X = leastSquares(A,R);
     X = solveNonLinear(A, R);
     estimateError();
 }
@@ -78,8 +79,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
 template <typename F, int D>
 bool Beacon<F, D>::Update(F rmsThreshold) {
     Beacon b = Fix(rmsThreshold);
-    if (b.Err < rmsThreshold) {
-        //std::cout << "update: " << b.Err << "\n";
+    if (b.Err < rmsThreshold*rmsThreshold) {
         *this = b;
         return true;
     }

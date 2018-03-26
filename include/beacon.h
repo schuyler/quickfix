@@ -5,7 +5,7 @@
 #include <iostream>
 
 template <typename F, int D>
-int Beacon<F, D>::findRow(const Point a) {
+int Beacon<F, D>::findRow(const Point &a) const {
     int i;
     for (i = 0; i < A.rows(); i++) {
         if (A.row(i).array().isApprox(a)) {
@@ -25,7 +25,7 @@ void Beacon<F, D>::checkSize(int i) {
 }
 
 template <typename F, int D>
-void Beacon<F, D>::Anchor(int i, Point anchor) {
+void Beacon<F, D>::Anchor(int i, const Point &anchor) {
     checkSize(i);
     A.row(i) = anchor;
 }
@@ -37,7 +37,7 @@ void Beacon<F, D>::Range(int i, F range) {
 }
 
 template <typename F, int D>
-int Beacon<F, D>::Reading(Point anchor, F range) {
+int Beacon<F, D>::Reading(const Point &anchor, F range) {
     int i = findRow(anchor);
     Anchor(i, anchor);
     Range(i, range);

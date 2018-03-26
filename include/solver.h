@@ -2,14 +2,12 @@
 #define _QUICKFIX_SOLVER_H
 
 template <typename F, int D>
-typename Beacon<F, D>::Ranges Beacon<F, D>::calculateRanges(Anchors a, Point x) {
+typename Beacon<F, D>::Ranges Beacon<F, D>::calculateRanges(const Anchors &a, const Point &x) {
     return (a.rowwise() - x.matrix()).rowwise().norm();
 }
 
 template <typename F, int D>
-typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(
-        Beacon<F, D>::Anchors A,
-        Beacon<F, D>::Ranges R) {
+typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(const Anchors &A, const Ranges &R) {
     int n = A.rows();
 
     Matrix<F, Dynamic, Dynamic> G(n, D+1);
@@ -40,10 +38,7 @@ int Beacon<F,D>::NonLinearFunctor::operator()(const Point &X_hat, Ranges &fvec) 
 
 // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L553
 template <typename F, int D>
-typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(
-        Beacon<F, D>::Anchors A,
-        Beacon<F, D>::Ranges R) {
-
+typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(const Anchors &A, const Ranges &R) {
     Beacon::NonLinearFunctor functor(A, R);
     NumericalDiff<Beacon::NonLinearFunctor> numDiff(functor);
     LevenbergMarquardt<NumericalDiff<Beacon::NonLinearFunctor>, F> lm(numDiff);

@@ -2,7 +2,7 @@
 #define _QUICKFIX_FIX_H
 
 template <typename F, int D>
-F Beacon<F, D>::meanSquaredError(Ranges R_hat) {
+F Beacon<F, D>::meanSquaredError(const Ranges &R_hat) const {
     return (R - R_hat).squaredNorm() / R.rows(); 
 }
 
@@ -27,7 +27,7 @@ void Beacon<F,D>::clipToBound() {
 }
 
 template <typename F, int D>
-void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseTarget) {
+void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseTarget) const {
     int n = A.rows() - 1;
     for (int drop = 0; drop < A.rows(); drop++) {
         Anchors a(n, D);
@@ -53,13 +53,13 @@ void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseT
 }
 
 template <typename F, int D>
-Beacon<F, D> Beacon<F, D>::Fix(F rmsError) {
+Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
     F mseTarget = rmsError * rmsError;
-    Beacon best;
+    Beacon best = *this;
     Queue queue;
 
-    estimatePosition();
-    queue.push(*this);
+    best.estimatePosition();
+    queue.push(best);
 
     while (!queue.empty()) {
         Beacon b = queue.top();
@@ -79,6 +79,7 @@ template <typename F, int D>
 bool Beacon<F, D>::Update(F rmsThreshold) {
     Beacon b = Fix(rmsThreshold);
     if (b.Err < rmsThreshold) {
+        //std::cout << "update: " << b.Err << "\n";
         *this = b;
         return true;
     }

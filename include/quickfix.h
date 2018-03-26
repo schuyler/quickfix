@@ -49,19 +49,18 @@ class Beacon {
     F Err;
 
     void checkSize(int i);
-    int findRow(const Point anchor);
+    int findRow(const Point &anchor) const;
 
-    static Point leastSquares(Anchors a, Ranges r);
-    static Point solveNonLinear(Anchors a, Ranges r);
-    static Ranges calculateRanges(Anchors a, Point x);
-    F meanSquaredError(Ranges R_hat);
+    static Point leastSquares(const Anchors &a, const Ranges &r);
+    static Point solveNonLinear(const Anchors &a, const Ranges &r);
+    static Ranges calculateRanges(const Anchors &a, const Point &x);
+    F meanSquaredError(const Ranges &R_hat) const;
 
     void estimatePosition();
     void estimateError();
     void clipToBound();
-    void expandAnchorSets(Queue &queue, F bestMse, F mseTarget);
+    void expandAnchorSets(Queue &queue, F bestMse, F mseTarget) const;
   public:
-    // TODO: Tidy up the constructors
     Beacon(const Bounds b) : Bound(b) { init(); }
     Beacon(const Bounds b, Anchors a, Ranges r) : A(a), R(r), Bound(b) { init(); }
     Beacon() { init(); }
@@ -78,16 +77,16 @@ class Beacon {
         return Err < other.Err;
     }
 
-    void Anchor(int i, Point anchor);
+    void Anchor(int i, const Point &anchor);
     void Range(int i, F range);
-    int Reading(Point anchor, F range);
-    Beacon Fix(F rmsError);
+    int Reading(const Point &anchor, F range);
+    Beacon Fix(F rmsError) const;
     bool Update(F rmsThreshold);
 
-    const Anchors AnchorMatrix() { return A; }
-    const Ranges RangeVector() { return R; }
-    const Point Position() { return X; }
-    void Position(const Point point) { X = point; }
+    const Anchors &AnchorMatrix() const { return A; }
+    const Ranges &RangeVector() const { return R; }
+    const Point &Position() const { return X; }
+    void Position(const Point &point) { X = point; }
     F Error() { return Err; }
     void Error(F value) { Err = value; }
 };

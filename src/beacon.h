@@ -1,89 +1,34 @@
-#include <Eigen/Dense>
-#include <unsupported/Eigen/NonLinearOptimization>
-#include <vector>
+#ifndef _QUICKFIX_BEACON_H
+#define _QUICKFIX_BEACON_H
+
 #include <queue>
-#include <limits>
+#include <iostream>
 
-using namespace Eigen;
-
-typedef int AnchorID;
+/*
+template <typename F, int D>
+int Beacon<F, D>::readingIndex(Beacon::Point a) {
+    for (int i = 0; i < A.rows(); i++) {
+        if (A.row(i).array().isApprox(a)) {
+            return i;
+        }
+    }
+    return -1;
+}
+*/
 
 template <typename F, int D>
-class Beacon {
-  public:
-    typedef Array<F, 1, D> Point;
-    typedef Array<F, 2, D> Bounds;
-    typedef Matrix<F, Dynamic, D> Anchors;
-    typedef Matrix<F, Dynamic, 1> Ranges;
-    typedef std::vector<Beacon> Container;
-    typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Queue;
+void Beacon<F, D>::Anchor(AnchorID id, Point anchor) {
+    if (id >= A.rows()) {
+        A.conservativeResize(id + 1, Eigen::NoChange);
+        R.conservativeResize(id + 1);
+    } 
+    A.row(id) = anchor;
+}
 
-    class NonLinearFunctor {
-        // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L528
-        const Anchors &A;
-        const Ranges &R;
-      public:
-        typedef F Scalar;
-        typedef Matrix<F, Dynamic, 1> InputType;
-        typedef Ranges ValueType;
-        typedef Matrix<F, Dynamic, Dynamic> JacobianType;
-        enum {
-            InputsAtCompileTime = D,
-            ValuesAtCompileTime = Dynamic
-        };
+template <typename F, int D>
+void Beacon<F, D>::Range(AnchorID id, F range) {
+    // TODO: assert that the anchor already exists
+    R(id) = range;
+}
 
-        NonLinearFunctor(const Anchors &a, const Ranges &r) : A(a), R(r) {}
-        int inputs() const { return D; }
-        int values() const { return R.rows(); }
-        int operator()(const Point &x, Ranges &fvec) const;
-    };
-
-  protected:
-    Anchors A;
-    Ranges R;
-    Point X;
-    Bounds Bound;
-    F Err;
-
-    // int readingIndex(Point a);
-    static Point leastSquares(Anchors a, Ranges r);
-    static Point solveNonLinear(Anchors a, Ranges r);
-    static Ranges calculateRanges(Anchors a, Point x);
-    F meanSquaredError(Ranges R_hat);
-    void estimatePosition();
-    void estimateError();
-    void clipToBound();
-    void expandAnchorSets(Queue &queue, F bestMse, F mseTarget);
-  public:
-    // TODO: Tidy up the constructors
-    Beacon(const Bounds b) : Bound(b) { init(); }
-    Beacon(const Bounds b, Anchors a, Ranges r) : A(a), R(r), Bound(b) { init(); }
-    Beacon() { init(); }
-    void init() {
-        Err = std::numeric_limits<F>::infinity();
-    }
-    bool operator== (const Beacon &other) const {
-        return Err == other.Err;
-    }
-    bool operator> (const Beacon &other) const {
-        return Err > other.Err;
-    }
-    bool operator< (const Beacon &other) const {
-        return Err < other.Err;
-    }
-
-    void Anchor(AnchorID id, Point anchor);
-    void Range(AnchorID id, F range);
-    Beacon Fix(F rmsError);
-    bool Update(F rmsThreshold);
-
-    const Anchors AnchorMatrix() { return A; }
-    const Ranges RangeVector() { return R; }
-    const Point Position() { return X; }
-    void Position(const Point point) { X = point; }
-    F Error() { return Err; }
-    void Error(F value) { Err = value; }
-};
-
-typedef Beacon<float, 2> Beacon2D;
-// typedef Beacon<float, 3> Beacon3D;
+#endif

@@ -1,7 +1,4 @@
-#include "beacon.h"
-#include <iostream>
-
-typedef Beacon<float, 2> Beacon2D;
+#include "quickfix.h"
 
 extern "C" {
     Beacon2D *Beacon2D_new(float minX, float minY, float maxX, float maxY) {

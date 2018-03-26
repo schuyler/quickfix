@@ -2,6 +2,11 @@
 #define _QUICKFIX_FIX_H
 
 template <typename F, int D>
+typename Beacon<F, D>::Ranges Beacon<F, D>::calculateRanges(const Anchors &a, const Point &x) {
+    return (a.rowwise() - x.matrix()).rowwise().norm();
+}
+
+template <typename F, int D>
 F Beacon<F, D>::meanSquaredError(const Ranges &R_hat) const {
     return (R - R_hat).squaredNorm() / R.rows(); 
 }
@@ -15,8 +20,7 @@ void Beacon<F, D>::estimateError() {
 
 template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
-    // X = leastSquares(A,R);
-    X = solveNonLinear(*this);
+    X = solveNonLinear<Beacon::RangeFunctor>(*this);
     Located = true;
     estimateError();
 }

@@ -21,9 +21,12 @@ class Beacon {
     typedef std::vector<Beacon> Container;
     typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Heap;
 
-    class NonLinearFunctor {
-        // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L528
+    class RangeFunctor {
+      protected:
         const Beacon &B;
+        Matrix<F, Dynamic, Dynamic> G;
+        Matrix<F, Dynamic, Dynamic> h;
+        void setCoefficients();
       public:
         typedef F Scalar;
         typedef Matrix<F, Dynamic, 1> InputType;
@@ -34,12 +37,18 @@ class Beacon {
             ValuesAtCompileTime = Dynamic
         };
 
-        NonLinearFunctor(const Beacon &b) : B(b) {}
+        RangeFunctor(const Beacon &b) : B(b) {}
         int inputs() const { return D; }
         int values() const { return B.R.rows(); }
         int operator()(const Point &x, Ranges &fvec) const;
+        Point solveLinear();
     };
 
+    /*
+    class DifferenceFunctor : RangeFunctor {
+        DifferenceFunctor(const Beacon &b) : B(b) {}
+    }
+    */
   protected:
     Anchors A;
     Ranges R;
@@ -51,8 +60,9 @@ class Beacon {
     void checkSize(int i);
     int findRow(const Point &anchor) const;
 
-    static Point leastSquares(const Anchors &a, const Ranges &r);
+    template <typename Functor>
     static Point solveNonLinear(const Beacon &b);
+
     static Ranges calculateRanges(const Anchors &a, const Point &x);
     F meanSquaredError(const Ranges &R_hat) const;
 
@@ -82,6 +92,7 @@ class Beacon {
     void Range(int i, F range);
     int Reading(const Point &anchor, F range);
     Beacon Fix(F rmsError) const;
+    Beacon DifferenceFix(const Anchors &a, const Ranges &r, F rmsError) const;
     bool Update(F rmsThreshold);
 
     const Anchors &AnchorMatrix() const { return A; }
@@ -93,7 +104,7 @@ class Beacon {
 };
 
 #include "quickfix/beacon.h"
-#include "quickfix/solver.h"
+#include "quickfix/range.h"
 #include "quickfix/fix.h"
 
 template class Beacon<float, 2>;

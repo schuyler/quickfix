@@ -26,6 +26,7 @@ class Beacon {
         const Beacon &B;
         Matrix<F, Dynamic, D+1> G;
         Matrix<F, Dynamic, 1> h;
+
         int resizeCoefficients();
         void setCoefficients();
       public:
@@ -45,14 +46,22 @@ class Beacon {
         Point solveLinear();
     };
 
-    /*
-    class DifferenceFunctor : RangeFunctor {
-        DifferenceFunctor(const Beacon &b) : B(b) {}
-    }
-    */
+    class DifferenceFunctor : public RangeFunctor {
+      protected:
+        using RangeFunctor::B;
+        using RangeFunctor::G;
+        using RangeFunctor::h;
+        void setCoefficients();
+
+      public:
+        DifferenceFunctor(const Beacon &b) : RangeFunctor(b) {}
+        int operator()(const Point &x, Ranges &fvec) const;
+    };
+
   protected:
     Anchors A;
     Ranges R;
+    Ranges dR;
     Point X;
     Bounds Bound;
     F Err;
@@ -93,7 +102,8 @@ class Beacon {
     void Range(int i, F range);
     int Reading(const Point &anchor, F range);
     Beacon Fix(F rmsError) const;
-    Beacon DifferenceFix(const Anchors &a, const Ranges &r, F rmsError) const;
+    int DifferenceReading(const Point &anchor, F dRange);
+    Beacon DifferenceFix(F rmsError) const;
     bool Update(F rmsThreshold);
 
     const Anchors &AnchorMatrix() const { return A; }
@@ -106,6 +116,7 @@ class Beacon {
 
 #include "quickfix/beacon.h"
 #include "quickfix/range.h"
+#include "quickfix/difference.h"
 #include "quickfix/fix.h"
 
 template class Beacon<float, 2>;

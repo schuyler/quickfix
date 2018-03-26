@@ -23,7 +23,7 @@ template <typename F, int D>
 typename Beacon<F,D>::Point Beacon<F, D>::RangeFunctor::solveLinear() {
     setCoefficients();
     Matrix<F, D+1, 1> x = G.householderQr().solve(h);
-    // Turn the [3, 1] solution matrix into a [1, 2] vector
+    // Turn the [D+1, 1] solution matrix into a [1, D] vector
     Map<Point> y(x.data(), x.size() - 1);
     return y;
 }

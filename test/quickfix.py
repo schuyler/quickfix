@@ -43,14 +43,19 @@ class Beacon2D(object):
         lib.Beacon2D_Anchor(self.obj, id_, float(xy[0]), float(xy[1]))
 
     def reading(self, xy, r):
-        lib.Beacon2D_Anchor(self.obj, float(xy[0]), float(xy[1]), float(r))
+        lib.Beacon2D_Reading(self.obj, float(xy[0]), float(xy[1]), float(r))
 
     def fix(self, rms_err):
         lib.Beacon2D_Fix(self.obj, rms_err)
-        x = lib.Beacon2D_X(self.obj)
-        y = lib.Beacon2D_Y(self.obj)
-        mse = lib.Beacon2D_Error(self.obj)
-        return np.array((x, y)), mse
+        return self.position(), self.error()
 
     def update(self, rms_err):
         lib.Beacon2D_Update(self.obj, rms_err)
+
+    def position(self):
+        x = lib.Beacon2D_X(self.obj)
+        y = lib.Beacon2D_Y(self.obj)
+        return np.array((x, y))
+
+    def error(self):
+        return lib.Beacon2D_Error(self.obj)

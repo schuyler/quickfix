@@ -24,8 +24,9 @@ class Beacon {
     class RangeFunctor {
       protected:
         const Beacon &B;
-        Matrix<F, Dynamic, Dynamic> G;
-        Matrix<F, Dynamic, Dynamic> h;
+        Matrix<F, Dynamic, D+1> G;
+        Matrix<F, Dynamic, 1> h;
+        int resizeCoefficients();
         void setCoefficients();
       public:
         typedef F Scalar;

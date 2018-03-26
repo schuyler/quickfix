@@ -1,0 +1,10 @@
+runs: 10000
+bounds:
+    - - -1000.0
+      - -500.0
+    - - 1000.0
+      - 500.0
+anchors: 7
+sensor_noise: 6.0
+nlos_noise: 1.0
+rmse: 18.0

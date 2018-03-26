@@ -80,7 +80,8 @@ template <typename F, int D>
 bool Beacon<F, D>::Update(F rmsThreshold) {
     Beacon b = Fix(rmsThreshold);
     if (b.Err < rmsThreshold*rmsThreshold) {
-        *this = b;
+        X = b.X;
+        Err = b.Err;
         return true;
     }
     return false;

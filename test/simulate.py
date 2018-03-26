@@ -48,7 +48,7 @@ class Environment(object):
 
     def run_tick(self, dump):
         self.target.move()
-        n = int(min(np.random.normal(self.mean_readings), 1))
+        n = int(max(np.random.normal(self.mean_readings), 1))
         for _ in range(n):
             anchor, rng = self.get_reading()
             self.tag.reading(anchor, rng)
@@ -57,10 +57,10 @@ class Environment(object):
         err = distance(self.target.position, self.tag.position())
         rms = math.sqrt(self.tag.error())
         if dump:
-            print "X: %s T: %s E: %-7.3f M: %-7.3f A: %2d/%2d" % (
+            print "X: %s T: %s E: %-7.3f M: %-7.3f A: +%2d/%2d/%2d" % (
                     self.target.position,
                     self.tag.position(),
-                    err, rms, self.tag.anchors(), pre_anchors)
+                    err, rms, n, pre_anchors, self.tag.anchors())
         if rms < 1e9:
             self.err.append(err)
             self.rms.append(rms)

@@ -7,5 +7,5 @@ bounds:
 anchors: 7
 sensor_noise: 6.0
 nlos_noise: 1.0
-rmse: 18.0
-debug: true
+rmse: 6.0
+debug: false

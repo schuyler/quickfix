@@ -16,7 +16,6 @@ int Beacon<F, D>::readingIndex(Beacon::Point a) {
 
 template <typename F, int D>
 void Beacon<F, D>::Anchor(AnchorID id, Point anchor) {
-    // FIXME: this whole resize business isn't the right way to go
     if (id >= A.rows()) {
         A.conservativeResize(id + 1, Eigen::NoChange);
         R.conservativeResize(id + 1);
@@ -49,15 +48,33 @@ typename Beacon<F,D>::Point Beacon<F, D>::leastSquares(
 
     HouseholderQR<MatrixXf> qr = G.householderQr();
     Matrix<F, Dynamic, 1> x = qr.solve(h);
-    /*
-    if (qr.rank() != 3) {
-        std::cout << "> rank: " << qr.rank() << "\n";
-    }
-    */
     // G.colPivHouseholderQr().solve(h);
     // Turn the [3, 1] solution matrix into a [1, 2] vector
     Map<Point> y(x.data(), x.size() - 1);
     return y;
+}
+
+template <typename F, int D>
+int Beacon<F,D>::NonLinearFunctor::operator()(const Point &X_hat, Ranges &fvec) const {
+    Ranges R_hat = Beacon::calculateRanges(A, X_hat);
+    fvec << (R - R_hat);
+    return 0;
+}
+
+// https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L553
+template <typename F, int D>
+typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(
+        Beacon<F, D>::Anchors A,
+        Beacon<F, D>::Ranges R) {
+
+    Beacon::NonLinearFunctor functor(A, R);
+    NumericalDiff<Beacon::NonLinearFunctor> numDiff(functor);
+    LevenbergMarquardt<NumericalDiff<Beacon::NonLinearFunctor>, F> lm(numDiff);
+
+    Point x0 = Beacon::leastSquares(A, R);
+    typename Beacon::NonLinearFunctor::InputType x = x0.matrix().transpose();
+    lm.minimize(x);
+    return x;
 }
 
 template <typename F, int D>
@@ -79,7 +96,6 @@ void Beacon<F, D>::estimateError() {
 
 template <typename F, int D>
 void Beacon<F,D>::estimatePosition() {
-    //X = leastSquares(A, R);
     X = solveNonLinear(A, R);
     estimateError();
 }
@@ -134,50 +150,25 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) {
                      "(" << b.Err << " MSE)" << std::endl;
         */
         queue.pop();
-        if (b.Err <= mseTarget) {
-            best = b;
-            break;
-        }
         if (b < best) best = b;
-        /*
-        std::cout << "- best so far: " << b.X << " (" << b.Err << ")" << std::endl;
-        */
+        if (b.Err <= mseTarget) break;
+        // std::cout << "- best so far: " << b.X << " (" << b.Err << ")" << std::endl;
         if (b.A.rows() > D + 1) {
             b.expandAnchorSets(queue, best.Err, mseTarget);
         }
     }
-    /*
-    if (best.Err < mseTarget) {
-        std::cout << "= selected: " << best.X << " (" << best.Err << ")" << std::endl;
-    } else {
-        std::cout << "? accepted: " << best.X << " (" << best.Err << ")" << std::endl;
-    }
-    */
     best.clipToBound();
     return best;
 }
 
 template <typename F, int D>
-int Beacon<F,D>::NonLinearFunctor::operator()(const Point &X_hat, Ranges &fvec) const {
-    Ranges R_hat = Beacon::calculateRanges(A, X_hat);
-    fvec << (R - R_hat);
-    return 0;
-}
-
-// https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L553
-template <typename F, int D>
-typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(
-        Beacon<F, D>::Anchors A,
-        Beacon<F, D>::Ranges R) {
-
-    Beacon::NonLinearFunctor functor(A, R);
-    NumericalDiff<Beacon::NonLinearFunctor> numDiff(functor);
-    LevenbergMarquardt<NumericalDiff<Beacon::NonLinearFunctor>, F> lm(numDiff);
-
-    Point x0 = Beacon::leastSquares(A, R);
-    typename Beacon::NonLinearFunctor::InputType x = x0.matrix().transpose();
-    lm.minimize(x);
-    return x;
+bool Beacon<F, D>::Update(F rmsThreshold) {
+    Beacon b = Fix(rmsThreshold);
+    if (b.Err < rmsThreshold) {
+        *this = b;
+        return true;
+    }
+    return false;
 }
 
 template class Beacon<float, 2>;

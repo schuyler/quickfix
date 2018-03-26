@@ -72,9 +72,10 @@ class Beacon {
         return Err < other.Err;
     }
 
-    Beacon Fix(F rmsError);
     void Anchor(AnchorID id, Point anchor);
     void Range(AnchorID id, F range);
+    Beacon Fix(F rmsError);
+    bool Update(F rmsThreshold);
 
     const Anchors AnchorMatrix() { return A; }
     const Ranges RangeVector() { return R; }

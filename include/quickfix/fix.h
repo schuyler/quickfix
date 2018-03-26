@@ -28,7 +28,7 @@ void Beacon<F,D>::clipToBound() {
 }
 
 template <typename F, int D>
-void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseTarget) const {
+void Beacon<F, D>::expandAnchorSets(Heap &heap, F bestMse, F mseTarget) const {
     int n = A.rows() - 1;
     for (int drop = 0; drop < A.rows(); drop++) {
         Anchors a(n, D);
@@ -45,7 +45,7 @@ void Beacon<F, D>::expandAnchorSets(Beacon<F,D>::Queue &queue, F bestMse, F mseT
         b.estimatePosition();
 
         if (b.Err < bestMse) {
-            queue.push(b);
+            heap.push(b);
         }
         if (b.Err <= mseTarget) {
             break;
@@ -57,19 +57,19 @@ template <typename F, int D>
 Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
     F mseTarget = rmsError * rmsError;
     Beacon best = *this;
-    Queue queue;
+    Heap heap;
 
     best.estimatePosition();
-    queue.push(best);
+    heap.push(best);
 
-    while (!queue.empty()) {
-        Beacon b = queue.top();
+    while (!heap.empty()) {
+        Beacon b = heap.top();
         // std::cout << b.A.rows << ": " << b.X << " (" << b.Err << ")\n";
-        queue.pop();
+        heap.pop();
         if (b < best) best = b;
         if (b.Err <= mseTarget) break;
         if (b.A.rows() > D + 1) {
-            b.expandAnchorSets(queue, best.Err, mseTarget);
+            b.expandAnchorSets(heap, best.Err, mseTarget);
         }
     }
     best.clipToBound();

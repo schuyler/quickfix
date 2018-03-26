@@ -19,7 +19,7 @@ class Beacon {
     typedef Matrix<F, Dynamic, D> Anchors;
     typedef Matrix<F, Dynamic, 1> Ranges;
     typedef std::vector<Beacon> Container;
-    typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Queue;
+    typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Heap;
 
     class NonLinearFunctor {
         // https://github.com/cryos/eigen/blob/master/unsupported/test/NonLinearOptimization.cpp#L528
@@ -59,7 +59,7 @@ class Beacon {
     void estimatePosition();
     void estimateError();
     void clipToBound();
-    void expandAnchorSets(Queue &queue, F bestMse, F mseTarget) const;
+    void expandAnchorSets(Heap &heap, F bestMse, F mseTarget) const;
   public:
     Beacon(const Bounds b) : Bound(b) { init(); }
     Beacon(const Bounds b, Anchors a, Ranges r) : A(a), R(r), Bound(b) { init(); }

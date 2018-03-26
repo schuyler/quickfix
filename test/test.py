@@ -27,7 +27,7 @@ def generate_nlos_noise(shape, factor=1.):
 def distance(a, b):
     return np.linalg.norm(a - b)
 
-def run_test(tag, actual_position, actual_ranges, bounds,
+def run_test(tag, actual_position, actual_ranges, anchors, bounds,
         sensor_noise=1., nlos_noise=1., mse_target=18., debug=False):
     def d(*args):
         if debug: print " ".join(map(repr, args))
@@ -39,8 +39,8 @@ def run_test(tag, actual_position, actual_ranges, bounds,
     d("nlos noise:", n_noise)
     noisy_ranges = (actual_ranges + s_noise) * n_noise
 
-    for i, r in enumerate(noisy_ranges):
-        tag.range(i, r)
+    for a, r in zip(anchors, noisy_ranges):
+        tag.reading(a, r)
 
     guess, mse = tag.fix(mse_target)
     """
@@ -68,9 +68,7 @@ def run_tests(runs=10000, anchors=7, sensor_noise=6., nlos_noise=1.,
 
         try:
             tag = Beacon2D(bounds)
-            for i, a in enumerate(anchor_set):
-                tag.anchor(i, a)
-            err, rms_err = run_test(tag, actual_position, actual_ranges, bounds,
+            err, rms_err = run_test(tag, actual_position, actual_ranges, anchor_set, bounds,
                                     sensor_noise, nlos_noise, rmse, debug)
             errors.append(err)
             rms_errors.append(rms_err)

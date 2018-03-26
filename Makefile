@@ -1,6 +1,6 @@
-CXX_INCLUDES=-I/usr/local/include/eigen3
+EIGEN_INCLUDE=$(shell pkg-config --cflags eigen3)
+CXX_INCLUDES=$(EIGEN_INCLUDE)
 CXX_FLAGS=-march=native -Wall -Ofast -DNDEBUG
-#CXX_FLAGS=-march=native -Wall -Ofast
 
 all: libquickfix.so libquickfix.a
 

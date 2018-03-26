@@ -91,9 +91,9 @@ class Beacon {
     void Error(F value) { Err = value; }
 };
 
-#include "beacon.h"
-#include "solver.h"
-#include "fix.h"
+#include "quickfix/beacon.h"
+#include "quickfix/solver.h"
+#include "quickfix/fix.h"
 
 template class Beacon<float, 2>;
 template class Beacon<float, 3>;

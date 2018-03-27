@@ -22,7 +22,7 @@ build/libquickfix.a: $(OBJ)
 
 demo/demo: demo/demo.c build/libquickfix.a
 	zcat <demo/fix.txt.gz >demo/fix.txt
-	g++ $(CXX_INCLUDES) $(CXX_FLAGS) $^ -o $@
+	g++ $(CXX_INCLUDES) $(CXX_FLAGS) $^ -o $@ -lm
 
 demo: demo/demo
 	cd demo && ./demo fix.txt

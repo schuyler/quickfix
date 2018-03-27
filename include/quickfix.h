@@ -50,7 +50,6 @@ class Beacon {
 
         void setCoefficients();
         DifferenceSolver(const Beacon &b, F time) : RangeSolver(b, time) {}
-        int values() const { return B.R.rows() - 1; }
         int operator()(const InputType &x, Ranges &fvec) const;
     };
 

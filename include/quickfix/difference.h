@@ -33,7 +33,7 @@ int Beacon<F,D>::DifferenceSolver::operator()(const InputType &X_hat, Ranges &fv
     Ranges R_hat = Beacon::calculateRanges(B.A, x);
     R_hat = (R_hat.array() - R_hat[i]).matrix(); 
 
-    fvec << (B.R - R_hat).bottomRows(R_hat.rows() - 1);
+    fvec << (B.R - R_hat);
     return 0;
 }
 

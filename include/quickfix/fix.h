@@ -109,14 +109,16 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold) {
     if (A.rows() < D + 1)
         return false;
     Beacon b = Fix<Solver>(time, rmsThreshold);
-    if (b.Err < rmsThreshold*rmsThreshold) {
+    rmsThreshold *= rmsThreshold;
+    //std::cout << "A.rows=" << A.rows() << " b.Err=" << b.Err << " rmsThreshold:" << rmsThreshold << "\n";
+    if (b.Err < rmsThreshold) {
         X = b.X;
         Err = b.Err;
         Time = time;
         // FIXME: unclear when/how often we should throw away readings
         // *this = b;
-        A.resize(0, 0);
-        R.resize(0);
+        // A.resize(0, 0);
+        // R.resize(0);
         return true;
     }
     return false;

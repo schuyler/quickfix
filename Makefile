@@ -20,6 +20,13 @@ build/libquickfix.so: $(OBJ)
 build/libquickfix.a: $(OBJ)
 	ar rvs $@ $<
 
+demo/demo: demo/demo.c build/libquickfix.a
+	zcat <demo/fix.txt.gz >demo/fix.txt
+	g++ $(CXX_INCLUDES) $(CXX_FLAGS) $^ -o $@
+
+demo: demo/demo
+	cd demo && ./demo fix.txt
+
 test: build/libquickfix.so
 	cd test && python test.py
 
@@ -27,8 +34,8 @@ simulate: build/libquickfix.so
 	cd test && python simulate.py
 
 clean:
-	rm -f build/* test/*.pyc
+	rm -f build/* test/*.pyc demo/fix.txt demo/demo demo/*.d
 
 -include $(OBJ:%.o=%.d)
 
-.PHONY: test clean
+.PHONY: test clean demo

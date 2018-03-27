@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "quickfix.h"
+#include "math.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -13,21 +14,27 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    Beacon2D *b = Beacon2D_new(0., 0., 200., 200.);
+    const float maxX = 350., maxY = 350;
+    Beacon2D *b = Beacon2D_new(0., 0., maxX, maxY);
     float x, y, z, dd;
     const float maxError = 100.;
+    const float multiPath = sqrt(maxX*maxX + maxY+maxY);
     int tick = 0;
 
     while (fscanf(in, "%f %f %f %f", &x, &y, &z, &dd) != EOF) {
-        if (dd >= 0) {
+        if (dd >= multiPath) {
+            printf("bad: %9.3f %9.3f %9.3f\n", x, y, dd);
+        } else if (dd >= 0) {
             printf("in : %9.3f %9.3f %9.3f\n", x, y, dd);
             Beacon2D_Reading(b, x, y, dd);
         } else {
             bool ok = Beacon2D_Update(b, tick, maxError);
-            if (ok) {
-                float x = Beacon2D_X(b), y = Beacon2D_Y(b);
-                printf("out: %9.3f %9.3f\n", x, y);
-            }
+            float x = Beacon2D_X(b),
+                  y = Beacon2D_Y(b),
+                  err = Beacon2D_Error(b);
+            printf("%s: %9.3f %9.3f %9.3f\n----\n",
+                    (ok ? "out" : "nop"),
+                    x, y, sqrt(err));
             tick++;
         }
     }

@@ -23,6 +23,9 @@ build/libquickfix.a: $(OBJ)
 test: build/libquickfix.so
 	cd test && python test.py
 
+simulate: build/libquickfix.so
+	cd test && python simulate.py
+
 clean:
 	rm -f build/* test/*.pyc
 

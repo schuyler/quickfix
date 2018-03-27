@@ -49,8 +49,13 @@ class Environment(object):
     def run_tick(self, dump):
         self.target.move()
         n = int(max(np.random.normal(self.mean_readings), 1))
+        anchors, ranges = [], []
         for _ in range(n):
-            anchor, rng = self.get_reading()
+            a, r = self.get_reading()
+            anchors.append(a)
+            ranges.append(r)
+        ranges = [r - min(ranges) for r in ranges]
+        for anchor, rng in zip(anchors, ranges):
             self.tag.reading(anchor, rng)
         pre_anchors = self.tag.anchors()
         self.tag.update(self.mse_target)

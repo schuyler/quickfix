@@ -9,8 +9,6 @@
 
 using namespace Eigen;
 
-typedef int AnchorID;
-
 template <typename F, int D>
 class Beacon {
   public:
@@ -21,15 +19,12 @@ class Beacon {
     typedef std::vector<Beacon> Container;
     typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Heap;
 
-    class RangeFunctor {
-      protected:
+    struct RangeSolver {
         const Beacon &B;
         Matrix<F, Dynamic, D+1> G;
         Matrix<F, Dynamic, 1> h;
+        virtual void setCoefficients();
 
-        int resizeCoefficients();
-        void setCoefficients();
-      public:
         typedef F Scalar;
         typedef Matrix<F, Dynamic, 1> InputType;
         typedef Ranges ValueType;
@@ -39,29 +34,28 @@ class Beacon {
             ValuesAtCompileTime = Dynamic
         };
 
-        RangeFunctor(const Beacon &b) : B(b) {}
+        RangeSolver(const Beacon &b) : B(b) {}
         int inputs() const { return D; }
-        int values() const { return B.R.rows(); }
-        int operator()(const Point &x, Ranges &fvec) const;
-        Point solveLinear();
+        virtual int values() const { return B.R.rows(); }
+        virtual int operator()(const InputType &x, Ranges &fvec) const;
+        InputType solveLinear();
     };
 
-    class DifferenceFunctor : public RangeFunctor {
-      protected:
-        using RangeFunctor::B;
-        using RangeFunctor::G;
-        using RangeFunctor::h;
-        void setCoefficients();
+    struct DifferenceSolver : RangeSolver {
+        using RangeSolver::B;
+        using RangeSolver::G;
+        using RangeSolver::h;
+        using typename RangeSolver::InputType;
 
-      public:
-        DifferenceFunctor(const Beacon &b) : RangeFunctor(b) {}
-        int operator()(const Point &x, Ranges &fvec) const;
+        void setCoefficients();
+        DifferenceSolver(const Beacon &b) : RangeSolver(b) {}
+        int values() const { return B.R.rows() - 1; }
+        int operator()(const InputType &x, Ranges &fvec) const;
     };
 
   protected:
     Anchors A;
     Ranges R;
-    Ranges dR;
     Point X;
     Bounds Bound;
     F Err;
@@ -70,19 +64,21 @@ class Beacon {
     void checkSize(int i);
     int findRow(const Point &anchor) const;
 
-    template <typename Functor>
+    template <typename Solver>
     static Point solveNonLinear(const Beacon &b);
 
     static Ranges calculateRanges(const Anchors &a, const Point &x);
     F meanSquaredError(const Ranges &R_hat) const;
 
+    template <typename T>
+    static void dropRow(T &x, int i);
+
+    template <typename Solver>
     void estimatePosition();
     void estimateError();
     void clipToBound();
-    void expandAnchorSets(Heap &heap, F bestMse, F mseTarget) const;
   public:
     Beacon(const Bounds b) : Bound(b) { init(); }
-    Beacon(const Bounds b, Anchors a, Ranges r) : A(a), R(r), Bound(b) { init(); }
     Beacon() { init(); }
     void init() {
         Err = std::numeric_limits<F>::infinity();
@@ -100,10 +96,13 @@ class Beacon {
 
     void Anchor(int i, const Point &anchor);
     void Range(int i, F range);
+
     int Reading(const Point &anchor, F range);
+
+    template <typename Solver>
     Beacon Fix(F rmsError) const;
-    int DifferenceReading(const Point &anchor, F dRange);
-    Beacon DifferenceFix(F rmsError) const;
+
+    template <typename Solver>
     bool Update(F rmsThreshold);
 
     const Anchors &AnchorMatrix() const { return A; }

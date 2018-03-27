@@ -40,13 +40,15 @@ extern "C" {
     }
 
     void Beacon2D_Fix(Beacon2D *b, float rmsError) {
-        Beacon2D estimate = b->Fix(rmsError);
+        Beacon2D estimate = b->Fix<Beacon2D::DifferenceSolver>(rmsError);
+        //Beacon2D estimate = b->Fix<Beacon2D::RangeSolver>(rmsError);
         // TODO: take these out and return the values
         b->Position(estimate.Position());
         b->Error(estimate.Error());
     }
 
     bool Beacon2D_Update(Beacon2D *b, float rmsThreshold) {
-        return b->Update(rmsThreshold);
+        return b->Update<Beacon2D::DifferenceSolver>(rmsThreshold);
+        //return b->Update<Beacon2D::RangeSolver>(rmsThreshold);
     }
 }

@@ -11,6 +11,10 @@ def generate_tag_position(bounds, dim=3):
 def compute_actual_ranges(actual, anchors):
     return np.linalg.norm(anchors - actual, axis=1)
 
+def compute_ddoa(actual, anchors):
+    r_ = compute_actual_ranges(actual, anchors)
+    return r_ - np.min(r_)
+
 def generate_sensor_noise(shape, factor=0.25):
     # Assume measurement noise is zero-centered Gaussian
     return np.random.normal(0.0, factor, shape)
@@ -37,7 +41,7 @@ def run_test(tag, actual_position, actual_ranges, anchors, bounds,
     d("     noise:", s_noise)
     n_noise = generate_nlos_noise(shape, nlos_noise)
     d("nlos noise:", n_noise)
-    noisy_ranges = (actual_ranges + s_noise) * n_noise
+    noisy_ranges = np.clip((actual_ranges + s_noise) * n_noise, 0., None)
 
     for a, r in zip(anchors, noisy_ranges):
         tag.reading(a, r)
@@ -50,7 +54,6 @@ def run_test(tag, actual_position, actual_ranges, anchors, bounds,
        guess[1] == bounds[1][1]:
            pass
     """
-
     error = distance(guess, actual_position)
     d("act:", actual_position, "upd:", guess, "err:", round(error, 6))
     return error, np.sqrt(mse)
@@ -64,11 +67,12 @@ def run_tests(runs=10000, anchors=7, sensor_noise=6., nlos_noise=1.,
     for _ in range(runs):
         anchor_set = generate_anchor_positions(anchors, bounds, dim)
         actual_position = generate_tag_position(bounds, dim)
-        actual_ranges = compute_actual_ranges(actual_position, anchor_set)
+        ddoa = compute_ddoa(actual_position, anchor_set)
+        # actual_ranges = compute_actual_ranges(actual_position, anchor_set)
 
         try:
             tag = Beacon2D(bounds)
-            err, rms_err = run_test(tag, actual_position, actual_ranges, anchor_set, bounds,
+            err, rms_err = run_test(tag, actual_position, ddoa, anchor_set, bounds,
                                     sensor_noise, nlos_noise, rmse, debug)
             errors.append(err)
             rms_errors.append(rms_err)

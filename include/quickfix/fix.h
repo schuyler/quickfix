@@ -3,8 +3,8 @@
 
 template <typename F, int D>
 template <typename Functor>
-typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(const Beacon &B) {
-    Functor functor(B);
+typename Beacon<F, D>::Point Beacon<F, D>::solveNonLinear(const Beacon &B, F time) {
+    Functor functor(B, time);
     functor.setCoefficients();
 
     NumericalDiff<Functor> numDiff(functor);
@@ -45,8 +45,8 @@ void Beacon<F, D>::estimateError() {
 
 template <typename F, int D>
 template <typename Solver>
-void Beacon<F,D>::estimatePosition() {
-    X = solveNonLinear<Solver>(*this);
+void Beacon<F,D>::estimatePosition(F time) {
+    X = solveNonLinear<Solver>(*this, time);
     Located = true;
     estimateError();
 }
@@ -68,12 +68,12 @@ void Beacon<F, D>::dropRow(T &x, int i) {
 
 template <typename F, int D>
 template <typename Solver>
-Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
+Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
     F mseTarget = rmsError * rmsError;
     Beacon best = *this;
     Heap heap;
 
-    best.estimatePosition<Solver>();
+    best.estimatePosition<Solver>(time);
     heap.push(best);
 
     while (!heap.empty()) {
@@ -89,7 +89,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
             Beacon next = b;
             dropRow<Anchors>(next.A, drop);
             dropRow<Ranges>(next.R, drop);
-            next.estimatePosition<Solver>();
+            next.estimatePosition<Solver>(time);
 
             if (next < best) {
                 heap.push(next);
@@ -105,13 +105,14 @@ Beacon<F, D> Beacon<F, D>::Fix(F rmsError) const {
 
 template <typename F, int D>
 template <typename Solver>
-bool Beacon<F, D>::Update(F rmsThreshold) {
+bool Beacon<F, D>::Update(F time, F rmsThreshold) {
     if (A.rows() < D + 1)
         return false;
-    Beacon b = Fix<Solver>(rmsThreshold);
+    Beacon b = Fix<Solver>(time, rmsThreshold);
     if (b.Err < rmsThreshold*rmsThreshold) {
         X = b.X;
         Err = b.Err;
+        Time = time;
         // FIXME: unclear when/how often we should throw away readings
         // *this = b;
         A.resize(0, 0);

@@ -46,7 +46,7 @@ class Environment(object):
         r_ = (r + s_noise) * n_noise
         return self.anchors[i], r_
 
-    def run_tick(self, dump):
+    def run_tick(self, tick, dump):
         self.target.move()
         n = int(max(np.random.normal(self.mean_readings), 1))
         anchors, ranges = [], []
@@ -58,7 +58,7 @@ class Environment(object):
         for anchor, rng in zip(anchors, ranges):
             self.tag.reading(anchor, rng)
         pre_anchors = self.tag.anchors()
-        self.tag.update(self.mse_target)
+        self.tag.update(tick, self.mse_target)
         err = distance(self.target.position, self.tag.position())
         rms = math.sqrt(self.tag.error())
         if dump:
@@ -71,8 +71,8 @@ class Environment(object):
             self.rms.append(rms)
 
     def run(self, ticks, dump):
-        for _ in range(ticks):
-            self.run_tick(dump)
+        for t in range(ticks):
+            self.run_tick(t, dump)
         return np.mean(self.err), np.std(self.err), np.mean(self.rms), np.std(self.rms)
 
 if __name__ == "__main__":

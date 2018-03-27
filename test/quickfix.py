@@ -15,10 +15,10 @@ lib.Beacon2D_Anchor.restype = None
 lib.Beacon2D_Reading.argtypes = [c_void_p, c_float, c_float, c_float]
 lib.Beacon2D_Reading.restype = None
 
-lib.Beacon2D_Fix.argtypes = [c_void_p, c_float]
+lib.Beacon2D_Fix.argtypes = [c_void_p, c_float, c_float]
 lib.Beacon2D_Fix.restype = None
 
-lib.Beacon2D_Update.argtypes = [c_void_p, c_float]
+lib.Beacon2D_Update.argtypes = [c_void_p, c_float, c_float]
 lib.Beacon2D_Update.restype = c_bool
 
 lib.Beacon2D_X.argtypes = [c_void_p]
@@ -48,12 +48,12 @@ class Beacon2D(object):
     def reading(self, xy, r):
         lib.Beacon2D_Reading(self.obj, float(xy[0]), float(xy[1]), float(r))
 
-    def fix(self, rms_err):
-        lib.Beacon2D_Fix(self.obj, rms_err)
+    def fix(self, tick, rms_err):
+        lib.Beacon2D_Fix(self.obj, tick, rms_err)
         return self.position(), self.error()
 
-    def update(self, rms_err):
-        lib.Beacon2D_Update(self.obj, rms_err)
+    def update(self, tick, rms_err):
+        lib.Beacon2D_Update(self.obj, tick, rms_err)
 
     def position(self):
         x = lib.Beacon2D_X(self.obj)

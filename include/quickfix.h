@@ -23,6 +23,7 @@ class Beacon {
         const Beacon &B;
         Matrix<F, Dynamic, D+1> G;
         Matrix<F, Dynamic, 1> h;
+        F T;
         virtual void setCoefficients();
 
         typedef F Scalar;
@@ -34,7 +35,7 @@ class Beacon {
             ValuesAtCompileTime = Dynamic
         };
 
-        RangeSolver(const Beacon &b) : B(b) {}
+        RangeSolver(const Beacon &b, F time) : B(b), T(time) {}
         int inputs() const { return D; }
         virtual int values() const { return B.R.rows(); }
         virtual int operator()(const InputType &x, Ranges &fvec) const;
@@ -48,7 +49,7 @@ class Beacon {
         using typename RangeSolver::InputType;
 
         void setCoefficients();
-        DifferenceSolver(const Beacon &b) : RangeSolver(b) {}
+        DifferenceSolver(const Beacon &b, F time) : RangeSolver(b, time) {}
         int values() const { return B.R.rows() - 1; }
         int operator()(const InputType &x, Ranges &fvec) const;
     };
@@ -59,13 +60,14 @@ class Beacon {
     Point X;
     Bounds Bound;
     F Err;
+    F Time;
     bool Located;
 
     void checkSize(int i);
     int findRow(const Point &anchor) const;
 
     template <typename Solver>
-    static Point solveNonLinear(const Beacon &b);
+    static Point solveNonLinear(const Beacon &b, F time);
 
     static Ranges calculateRanges(const Anchors &a, const Point &x);
     F meanSquaredError(const Ranges &R_hat) const;
@@ -74,7 +76,7 @@ class Beacon {
     static void dropRow(T &x, int i);
 
     template <typename Solver>
-    void estimatePosition();
+    void estimatePosition(F time);
     void estimateError();
     void clipToBound();
   public:
@@ -100,10 +102,10 @@ class Beacon {
     int Reading(const Point &anchor, F range);
 
     template <typename Solver>
-    Beacon Fix(F rmsError) const;
+    Beacon Fix(F time, F rmsError) const;
 
     template <typename Solver>
-    bool Update(F rmsThreshold);
+    bool Update(F time, F rmsThreshold);
 
     const Anchors &AnchorMatrix() const { return A; }
     const Ranges &RangeVector() const { return R; }

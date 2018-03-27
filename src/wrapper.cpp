@@ -39,16 +39,16 @@ extern "C" {
         return b->AnchorMatrix().rows();
     }
 
-    void Beacon2D_Fix(Beacon2D *b, float rmsError) {
-        Beacon2D estimate = b->Fix<Beacon2D::DifferenceSolver>(rmsError);
+    void Beacon2D_Fix(Beacon2D *b, float tick, float rmsError) {
+        Beacon2D estimate = b->Fix<Beacon2D::DifferenceSolver>(tick, rmsError);
         //Beacon2D estimate = b->Fix<Beacon2D::RangeSolver>(rmsError);
         // TODO: take these out and return the values
         b->Position(estimate.Position());
         b->Error(estimate.Error());
     }
 
-    bool Beacon2D_Update(Beacon2D *b, float rmsThreshold) {
-        return b->Update<Beacon2D::DifferenceSolver>(rmsThreshold);
+    bool Beacon2D_Update(Beacon2D *b, float tick, float rmsThreshold) {
+        return b->Update<Beacon2D::DifferenceSolver>(tick, rmsThreshold);
         //return b->Update<Beacon2D::RangeSolver>(rmsThreshold);
     }
 }

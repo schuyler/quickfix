@@ -46,7 +46,7 @@ def run_test(tag, actual_position, actual_ranges, anchors, bounds,
     for a, r in zip(anchors, noisy_ranges):
         tag.reading(a, r)
 
-    guess, mse = tag.fix(mse_target)
+    guess, mse = tag.fix(1., mse_target)
     """
     if guess[0] == bounds[0][0] or \
        guess[1] == bounds[0][1] or \

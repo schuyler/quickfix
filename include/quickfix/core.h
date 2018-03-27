@@ -119,7 +119,4 @@ class Beacon {
 #include "quickfix/difference.h"
 #include "quickfix/fix.h"
 
-typedef Beacon<float, 2> Beacon2D;
-typedef Beacon<float, 3> Beacon3D;
-
 #endif

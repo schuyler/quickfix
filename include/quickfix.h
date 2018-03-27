@@ -3,17 +3,20 @@
 
 #include "quickfix/core.h"
 
+typedef Beacon<float, 2> Beacon2D;
+typedef Beacon<float, 3> Beacon3D;
+
 extern "C" {
-    Beacon2D *Beacon2D_new(float minX, float minY, float maxX, float maxY);
-    void Beacon2D_Anchor(Beacon2D *b, int id, float x, float y);
-    void Beacon2D_Range(Beacon2D *b, int id, float r);
-    void Beacon2D_Reading(Beacon2D *b, float x, float y, float r);
-    float Beacon2D_X(Beacon2D *b);
-    float Beacon2D_Y(Beacon2D *b);
-    float Beacon2D_Error(Beacon2D *b);
-    int Beacon2D_Anchors(Beacon2D *b);
-    void Beacon2D_Fix(Beacon2D *b, float tick, float rmsError);
-    bool Beacon2D_Update(Beacon2D *b, float tick, float rmsThreshold);
+    Beacon2D *beacon2d_new(float minX, float minY, float maxX, float maxY);
+    void beacon2d_anchor(Beacon2D *b, int id, float x, float y);
+    void beacon2d_range(Beacon2D *b, int id, float r);
+    void beacon2d_reading(Beacon2D *b, float x, float y, float r);
+    float beacon2d_x(Beacon2D *b);
+    float beacon2d_y(Beacon2D *b);
+    float beacon2d_error(Beacon2D *b);
+    int beacon2d_anchors(Beacon2D *b);
+    void beacon2d_fix(Beacon2D *b, float tick, float rmsError);
+    bool beacon2d_update(Beacon2D *b, float tick, float rmsThreshold);
 }
 
 #endif

@@ -13,9 +13,7 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    Beacon2D::Bounds bounds;
-    bounds << 0., 0., 200., 200.;
-    Beacon2D b(bounds);
+    Beacon2D *b = Beacon2D_new(0., 0., 200., 200.);
     float x, y, z, dd;
     const float maxError = 100.;
     int tick = 0;
@@ -23,14 +21,12 @@ int main(int argc, char **argv) {
     while (fscanf(in, "%f %f %f %f", &x, &y, &z, &dd) != EOF) {
         if (dd >= 0) {
             printf("in : %9.3f %9.3f %9.3f\n", x, y, dd);
-            Beacon2D::Point p;
-            p << x, y;
-            b.Reading(p, dd);
+            Beacon2D_Reading(b, x, y, dd);
         } else {
-            bool ok = b.Update<Beacon2D::DifferenceSolver>(tick, maxError);
+            bool ok = Beacon2D_Update(b, tick, maxError);
             if (ok) {
-                const Beacon2D::Point p = b.Position();
-                printf("out: %9.3f %9.3f\n", p[0], p[1]);
+                float x = Beacon2D_X(b), y = Beacon2D_Y(b);
+                printf("out: %9.3f %9.3f\n", x, y);
             }
             tick++;
         }

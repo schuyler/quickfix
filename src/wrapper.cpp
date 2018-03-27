@@ -1,5 +1,8 @@
 #include "quickfix.h"
 
+template class Beacon<float, 2>;
+// template class Beacon<float, 3>;
+
 extern "C" {
     Beacon2D *Beacon2D_new(float minX, float minY, float maxX, float maxY) {
         Beacon2D::Bounds bound;

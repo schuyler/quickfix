@@ -44,4 +44,10 @@ int Beacon<F, D>::Reading(const Point &anchor, F range) {
     return i;
 }
 
+template <typename F, int D>
+void Beacon<F, D>::Clear(void) {
+    A.resize(0, D);
+    R.resize(0);
+}
+
 #endif

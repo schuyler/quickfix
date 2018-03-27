@@ -99,6 +99,7 @@ class Beacon {
     void Range(int i, F range);
 
     int Reading(const Point &anchor, F range);
+    void Clear(void);
 
     template <typename Solver>
     Beacon Fix(F time, F rmsError) const;

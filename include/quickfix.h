@@ -11,6 +11,7 @@ extern "C" {
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y);
     void beacon2d_range(Beacon2D *b, int id, float r);
     void beacon2d_reading(Beacon2D *b, float x, float y, float r);
+    void beacon2d_clear(Beacon2D *b);
     float beacon2d_x(Beacon2D *b);
     float beacon2d_y(Beacon2D *b);
     float beacon2d_error(Beacon2D *b);

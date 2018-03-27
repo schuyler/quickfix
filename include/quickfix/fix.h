@@ -117,8 +117,8 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold) {
         Time = time;
         // FIXME: unclear when/how often we should throw away readings
         // *this = b;
-        // A.resize(0, 0);
-        // R.resize(0);
+        // _or_
+        // Clear();
         return true;
     }
     return false;

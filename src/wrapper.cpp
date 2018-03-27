@@ -26,6 +26,10 @@ extern "C" {
         b->Reading(p, r);
     }
 
+    void beacon2d_clear(Beacon2D *b) {
+        return b->Clear();
+    }
+
     float beacon2d_x(Beacon2D *b) {
         return b->Position()[0];
     }

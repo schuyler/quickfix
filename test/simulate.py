@@ -69,6 +69,7 @@ class Environment(object):
         if rms < 1e9:
             self.err.append(err)
             self.rms.append(rms)
+        self.tag.clear()
 
     def run(self, ticks, dump):
         for t in range(ticks):

@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     }
     
     const float maxX = 350., maxY = 350;
-    Beacon2D *b = Beacon2D_new(0., 0., maxX, maxY);
+    Beacon2D *b = beacon2d_new(0., 0., maxX, maxY);
     float x, y, z, dd;
     const float maxError = 100.;
     const float multiPath = sqrt(maxX*maxX + maxY+maxY);
@@ -26,15 +26,21 @@ int main(int argc, char **argv) {
             printf("bad: %9.3f %9.3f %9.3f\n", x, y, dd);
         } else if (dd >= 0) {
             printf("in : %9.3f %9.3f %9.3f\n", x, y, dd);
-            Beacon2D_Reading(b, x, y, dd);
+            beacon2d_reading(b, x, y, dd);
         } else {
-            bool ok = Beacon2D_Update(b, tick, maxError);
-            float x = Beacon2D_X(b),
-                  y = Beacon2D_Y(b),
-                  err = Beacon2D_Error(b);
+            bool ok = beacon2d_update(b, tick, maxError);
+            float x = beacon2d_x(b),
+                  y = beacon2d_y(b),
+                  err = beacon2d_error(b);
             printf("%s: %9.3f %9.3f %9.3f\n----\n",
                     (ok ? "out" : "nop"),
                     x, y, sqrt(err));
+            /*
+             * This does not actually seem to help with the demo fixtures.
+            if (ok) {
+                beacon2d_clear(b);
+            }
+            */
             tick++;
         }
     }

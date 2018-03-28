@@ -82,8 +82,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
         heap.pop();
         if (b < best) best = b;
         if (b.Err <= mseTarget) break;
-        // FIXME for RangeSolver: this _was_ D + 1, but Chan-Ho throws away one
-        if (b.A.rows() <= D + 2) continue;
+        if (b.A.rows() <= D + 1) continue;
 
         for (int drop = 0; drop < b.A.rows(); drop++) {
             Beacon next = b;
@@ -106,7 +105,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
 template <typename F, int D>
 template <typename Solver>
 bool Beacon<F, D>::Update(F time, F rmsThreshold) {
-    if (A.rows() < D + 1)
+    if (A.rows() <= D + 1)
         return false;
     Beacon b = Fix<Solver>(time, rmsThreshold);
     rmsThreshold *= rmsThreshold;

@@ -1,20 +1,31 @@
+# coding=utf8
+
 import numpy as np
 import math, time, yaml
 from quickfix import Beacon2D
+from particle import ParticleFilter
 
 def distance(a, b):
     return np.linalg.norm(a - b)
 
 class Target(object):
-    def __init__(self, bounds, speed=60., wander=3., dim=2):
+    def __init__(self, bounds, speed=60., wander=1.5, dim=2):
         self.bounds = bounds
         self.position = np.random.uniform(bounds[0], bounds[1], (dim,))
-        self.speed = speed
+        self.max_speed = speed
+        self.speed = np.clip(np.abs(np.random.normal(0., self.max_speed / 2.)), 0., self.max_speed)
         self.direction = np.random.uniform(0, 2*math.pi)
         self.wander = wander
 
     def move(self):
-        r = np.clip(np.random.normal(self.speed / 2., self.speed / 4.), 0., self.speed)
+        if np.random.normal() > self.wander:
+            self.speed = np.clip(
+                self.speed + np.random.normal(0.0, self.max_speed/10.),
+                0., 
+                self.max_speed
+            )
+        #print "target speed:", self.speed, "direction: ", self.direction
+        r = self.speed
         z = r * np.exp(1j * self.direction)
         pos = self.position + np.array((np.real(z), np.imag(z)))
         self.position = np.clip(pos, self.bounds[0], self.bounds[1])
@@ -37,6 +48,7 @@ class Environment(object):
         self.target = Target(bounds=bounds, speed=target_speed)
         self.err = []
         self.rms = []
+        self.filter = ParticleFilter(3., 36., self.bounds, 100)
         
     def get_reading(self):
         i = np.random.choice(tuple(range(len(self.anchors))))
@@ -58,15 +70,27 @@ class Environment(object):
         for anchor, rng in zip(anchors, ranges):
             self.tag.reading(anchor, rng)
         pre_anchors = self.tag.anchors()
-        self.tag.update(tick, self.mse_target)
-        err = distance(self.target.position, self.tag.position())
+        
+        ok = self.tag.update(tick, self.mse_target)
+        if ok:
+            self.filter.update(1., self.tag.position())
+        else:
+            self.filter.predict(1.)
+        position = self.filter.position()
+        #position = self.tag.position()
+        if position is None: return
+        m_err = distance(self.target.position, self.tag.position())
+        err = distance(self.target.position, position)
         rms = math.sqrt(self.tag.error())
-        if dump:
-            print "X: %s T: %s E: %-7.3f M: %-7.3f A: +%2d/%2d/%2d" % (
+        if dump: # and err > self.mse_target:
+            print "%6d X: %s X': %s | F_Err: %7.3f | MSE: %7.3f | M_Err: %7.3f | A: %2d(+%2d)/%2d %s" % (
+                    tick,
                     self.target.position,
-                    self.tag.position(),
-                    err, rms, n, pre_anchors, self.tag.anchors())
-        if rms < 1e9:
+                    position,
+                    err, rms, m_err,
+                    pre_anchors, n, self.tag.anchors(),
+                    ("✓" if ok else "𝙓"))
+        if rms < 1e12:
             self.err.append(err)
             self.rms.append(rms)
         self.tag.clear()

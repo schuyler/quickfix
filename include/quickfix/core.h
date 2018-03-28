@@ -9,6 +9,8 @@
 
 using namespace Eigen;
 
+#include "particle_filter.h"
+
 template <typename F, int D>
 class Beacon {
   public:
@@ -18,6 +20,7 @@ class Beacon {
     typedef Matrix<F, Dynamic, 1> Ranges;
     typedef std::vector<Beacon> Container;
     typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Heap;
+    typedef ParticleFilter<F, D> PointFilter;
 
     struct RangeSolver {
         const Beacon &B;
@@ -61,6 +64,7 @@ class Beacon {
     F Err;
     F Time;
     bool Located;
+    PointFilter Filter;
 
     void checkSize(int i);
     int findRow(const Point &anchor) const;
@@ -79,8 +83,12 @@ class Beacon {
     void estimateError();
     void clipToBound();
   public:
-    Beacon(const Bounds b) : Bound(b) { init(); }
-    Beacon() { init(); }
+    Beacon(const Bounds b, const PointFilter &f) : Bound(b), Filter(f) {
+        init();
+    }
+    Beacon(const Bounds b) : Bound(b), Filter(50, 1., 1., b) {
+        init();
+    }
     void init() {
         Err = std::numeric_limits<F>::infinity();
         Located = false;

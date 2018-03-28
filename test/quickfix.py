@@ -59,7 +59,7 @@ class Beacon2D(object):
         return self.position(), self.error()
 
     def update(self, tick, rms_err):
-        lib.beacon2d_update(self.obj, tick, rms_err)
+        return lib.beacon2d_update(self.obj, tick, rms_err)
 
     def position(self):
         x = lib.beacon2d_x(self.obj)

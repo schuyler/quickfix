@@ -1,6 +1,9 @@
+# coding=utf8
+
 import numpy as np
 import math, time, yaml
 from quickfix import Beacon2D
+from kalman import KalmanFilter
 
 def distance(a, b):
     return np.linalg.norm(a - b)
@@ -37,6 +40,7 @@ class Environment(object):
         self.target = Target(bounds=bounds, speed=target_speed)
         self.err = []
         self.rms = []
+        self.filter = KalmanFilter(target_speed, 0.001)
         
     def get_reading(self):
         i = np.random.choice(tuple(range(len(self.anchors))))
@@ -58,15 +62,27 @@ class Environment(object):
         for anchor, rng in zip(anchors, ranges):
             self.tag.reading(anchor, rng)
         pre_anchors = self.tag.anchors()
-        self.tag.update(tick, self.mse_target)
-        err = distance(self.target.position, self.tag.position())
+        
+        ok = self.tag.update(tick, self.mse_target)
+        if ok:
+            self.filter.update(1., self.tag.position())
+        else:
+            self.filter.predict(1.)
+        position = self.filter.position()
+        if position is None: return
+        #position = self.tag.position()
+        m_err = distance(self.target.position, self.tag.position())
+        err = distance(self.target.position, position)
         rms = math.sqrt(self.tag.error())
-        if dump:
-            print "X: %s T: %s E: %-7.3f M: %-7.3f A: +%2d/%2d/%2d" % (
+        if dump: # and err > self.mse_target:
+            print "%6d X: %s X': %s | F_Err: %7.3f | MSE: %7.3f | M_Err: %7.3f | A: %2d(+%2d)/%2d %s" % (
+                    tick,
                     self.target.position,
-                    self.tag.position(),
-                    err, rms, n, pre_anchors, self.tag.anchors())
-        if rms < 1e9:
+                    position,
+                    err, rms, m_err,
+                    pre_anchors, n, self.tag.anchors(),
+                    ("✓" if ok else "𝙓"))
+        if rms < 1e12:
             self.err.append(err)
             self.rms.append(rms)
         self.tag.clear()

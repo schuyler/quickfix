@@ -1,12 +1,19 @@
 import numpy as np
 
 class KalmanFilter(object):
-    def __init__(self, motion_noise, measurement_noise):
+    def __init__(self, motion_noise, measurement_noise, bounds):
         self.q = motion_noise
         self.r = measurement_noise
-	self.P = np.matrix(np.identity(4)) * motion_noise
-	self.x = None #np.matrix(np.zeros(4)).T
-        self.accel = 18.
+        self.speed_limit = 60.
+        self.bounds = [
+            np.matrix(bounds[0] + [0.0, 0.0]).T,
+            np.matrix(bounds[1] + [self.speed_limit, self.speed_limit]).T
+        ]
+        self.reset()
+
+    def reset(self):
+        self.x = None
+	self.P = np.matrix(np.identity(4)) * self.q
 
     def F(self, dt):
         f = np.matrix(np.identity(4))
@@ -45,9 +52,17 @@ class KalmanFilter(object):
         Q = self.Q(dt, q)
         P = self.P
         x = self.x
-        x_k = F * x + G * np.random.normal(0., q)
+
+        #a = np.random.normal(0., q)
+        x_k = F * x #+ G * a
+        """
+        print "\n>>> x:\n", repr(x)
+        print "F:\n", repr(F)
+        print "G:\n", repr(G)
+        print "x_k:\n", repr(x_k)
+        """
         P_k = F * P * F.T + Q
-        self.x = x_k
+        self.x = self.clip(x_k)
         self.P = P_k
         return self.x
 
@@ -59,7 +74,7 @@ class KalmanFilter(object):
             self.x = H.T * z_k
             return self.x
 
-        self.predict(dt)
+        #self.predict(dt)
 
         if r is None: r = self.r
         P = self.P
@@ -68,8 +83,16 @@ class KalmanFilter(object):
         x = self.x
 
         y_k = z_k - H * x
-        x_k = x + K * y_k
 
+        """
+        print "---\nx:\n", repr(x)
+        print "z_k:\n", repr(z_k)
+        print "y_k:\n", repr(y_k)
+        """
+        # if np.linalg.norm(y_k) > self.speed_limit: return
+
+        print "---\nK:", K
+        x_k = x + K * y_k
         P_k = P - K * H * P
 
         """
@@ -78,9 +101,12 @@ class KalmanFilter(object):
         print "  K:", K
         print "  P:", P
         """
-        self.x = x_k
+        self.x = self.clip(x_k)
         self.P = P_k
         return self.x
+
+    def clip(self, x):
+        return np.clip(x, self.bounds[0], self.bounds[1])
 
     def position(self):
         if self.x is None: return None

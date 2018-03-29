@@ -83,7 +83,7 @@ class Beacon {
     void estimateError();
     void clipToBound();
   public:
-    Beacon(const Bounds b, const PointFilter &f) : Bound(b), Filter(f) {
+    Beacon(const Bounds b, const PointFilter f) : Bound(b), Filter(f) {
         init();
     }
     Beacon(const Bounds b) : Bound(b), Filter(50, 1., 1., b) {

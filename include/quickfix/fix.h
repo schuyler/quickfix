@@ -111,7 +111,9 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold) {
     rmsThreshold *= rmsThreshold;
     //std::cout << "A.rows=" << A.rows() << " b.Err=" << b.Err << " rmsThreshold:" << rmsThreshold << "\n";
     if (b.Err < rmsThreshold) {
-        X = b.X;
+        Filter.Update(Time - time, b.X);
+        X = Filter.Position();
+        estimateError();
         Err = b.Err;
         Time = time;
         // FIXME: unclear when/how often we should throw away readings

@@ -11,11 +11,12 @@ class FilterBase {
     typedef Array<F, 1, D> Point;
     typedef Array<F, 2, D> Bounds;
 
-    virtual void Reset();
-    virtual void Reset(const Point &p);
-    virtual bool Update(const F dT, const Point &p);
-    virtual bool Update(const F dT);
-    virtual const Point &Position();
+    // FIXME: these methods should be pure virtual
+    virtual void Reset() {}
+    virtual void Reset(const Point &p) {}
+    virtual bool Update(const F dT, const Point &p) {return true;}
+    virtual bool Update(const F dT) {return true;}
+    virtual const Point &Position() {return *(new Point());}
 };
 
 template <typename F, int D>

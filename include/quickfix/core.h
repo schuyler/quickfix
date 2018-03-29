@@ -1,6 +1,13 @@
 #ifndef _QUICKFIX_CORE_H
 #define _QUICKFIX_CORE_H
 
+#ifdef NDEBUG
+#define qfdebug(x)
+#else
+#include <iostream>
+#define qfdebug(x) std::cout << x << std::endl
+#endif
+
 #include <Eigen/Dense>
 #include <unsupported/Eigen/NonLinearOptimization>
 #include <vector>
@@ -83,7 +90,7 @@ class Beacon {
     void estimateError();
     void clipToBound();
   public:
-    Beacon(const Bounds b, const PointFilter f) : Bound(b), Filter(f) {
+    Beacon(const Bounds b, const PointFilter f, F t=0.) : Bound(b), Time(t), Filter(f) {
         init();
     }
     Beacon(const Bounds b) : Bound(b), Filter(50, 1., 1., b) {

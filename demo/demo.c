@@ -15,7 +15,9 @@ int main(int argc, char **argv) {
     }
     
     const float maxX = 350., maxY = 350;
-    Beacon2D *b = beacon2d_new(0., 0., maxX, maxY);
+    Bounds2D *bound = bounds2d_new(0., 0., maxX, maxY);
+    PointFilter2D *filter = particlefilter2d_new(10, 3., 6., bound);
+    Beacon2D *b = beacon2d_new(bound, filter);
     float x, y, z, dd;
     const float maxError = 100.;
     const float multiPath = sqrt(maxX*maxX + maxY+maxY);
@@ -35,12 +37,6 @@ int main(int argc, char **argv) {
             printf("%s: %9.3f %9.3f %9.3f\n----\n",
                     (ok ? "out" : "nop"),
                     x, y, sqrt(err));
-            /*
-             * This does not actually seem to help with the demo fixtures.
-            if (ok) {
-                beacon2d_clear(b);
-            }
-            */
             tick++;
         }
     }

@@ -113,8 +113,7 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold) {
     if (b.Err < rmsThreshold) {
         Filter.Update(Time - time, b.X);
         X = Filter.Position();
-        estimateError();
-        Err = b.Err;
+        clipToBound();
         Time = time;
         // FIXME: unclear when/how often we should throw away readings
         // *this = b;

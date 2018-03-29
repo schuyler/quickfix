@@ -4,10 +4,19 @@ template class Beacon<float, 2>;
 // template class Beacon<float, 3>;
 
 extern "C" {
-    Beacon2D *beacon2d_new(float minX, float minY, float maxX, float maxY) {
-        Beacon2D::Bounds bound;
-        bound << minX, minY, maxX, maxY;
-        return new Beacon2D(bound);
+    Bounds2D *bounds2d_new(float minX, float minY, float maxX, float maxY) {
+        Beacon2D::Bounds *bound = new Beacon2D::Bounds();
+        *bound << minX, minY, maxX, maxY;
+        return bound;
+    }
+
+    PointFilter2D *particlefilter2d_new(int n, float dispersion,
+                                         float inertia, Bounds2D *bound) {
+        return new PointFilter2D(n, dispersion, inertia, *bound);
+    }
+
+    Beacon2D *beacon2d_new(const Bounds2D *bound, const PointFilter2D *filter) {
+        return new Beacon2D(*bound, *filter);
     }
 
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y) {

@@ -5,29 +5,28 @@
 #include <cmath>
 
 template <typename F, int D>
-class ParticleFilter : public Filter<F, D> {
+class ParticleFilter : public FilterBase<F, D> {
   public:
-    typedef Array<F, 1, D> Point;
-    typedef Array<F, 2, D> Bounds;
+    typedef typename FilterBase<F,D>::Point Point;
+    typedef typename FilterBase<F,D>::Bounds Bounds;
   protected:
     typedef Matrix<F, Dynamic, D> Particles;
     typedef Matrix<F, Dynamic, 1> Weights;
 
-
     Particles P;
     Weights W;
     Point X;
+
+    int N;
     F dispersion;
     F inertia;
     Bounds bound;
-    int N;
 
     void weigh(F dT, const Point &x);
     void shuffle();
     void perturb(F dT);
   public:
-
-    ParticleFilter(int n_, F disp, F inert, Bounds b) : Filter<F,D>(),
+    ParticleFilter(int n_, F disp, F inert, Bounds b) : FilterBase<F,D>(),
         N(n_), dispersion(disp), inertia(inert), bound(b) { Reset(); }
 
     void Reset();
@@ -39,7 +38,7 @@ class ParticleFilter : public Filter<F, D> {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::weigh(F dT, const Point &x) {
-    Weights dx = (P.rowwise() - x).norm();
+    Weights dx = (P.rowwise() - x.matrix()).rowwise().norm();
     Weights w = (dx.array() / (-2. * pow(inertia * dT, 2))).exp();
     W = (w / w.sum()).matrix();
 }
@@ -50,7 +49,7 @@ void ParticleFilter<F,D>::shuffle() {
     Particles p_ = P;
     while (i < N) {
         while (i < N && rand() < W[j]) {
-            P[i] = p_[j];
+            P.row(i)= p_.row(j);
             i++;
         }
         j = (j + 1) % N;
@@ -68,7 +67,7 @@ void ParticleFilter<F,D>::perturb(F dT) {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::Reset() {
-    Array<F, 1, D> range = bound[1] - bound[0];
+    Array<F, 1, D> range = bound.row(1) - bound.row(0);
     Array<F, Dynamic, D> particles = (Particles::Random(N, D).array() * 0.5 + 0.5) * range;
     P = particles.matrix();
     W = Weights::Zero(1, D);
@@ -80,11 +79,13 @@ bool ParticleFilter<F,D>::Update(F dT, const Point &p) {
     shuffle();
     X = P.colwise().mean();
     perturb(dT);
+    return true;
 }
 
 template <typename F, int D>
 bool ParticleFilter<F,D>::Update(F dT) {
     // this space left intentionally blank
+    return true;
 }
 
 #endif

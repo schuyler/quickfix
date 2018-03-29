@@ -82,7 +82,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
         heap.pop();
         if (b < best) best = b;
         if (b.Err <= mseTarget) break;
-        if (b.A.rows() <= D + 1) continue;
+        if (b.A.rows() <= D + 2) continue;
 
         for (int drop = 0; drop < b.A.rows(); drop++) {
             Beacon next = b;
@@ -90,9 +90,9 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
             dropRow<Ranges>(next.R, drop);
             next.estimatePosition<Solver>(time);
 
-            if (next < best) {
+            //if (next < best) {
                 heap.push(next);
-            }
+            //}
             if (next.Err <= mseTarget) {
                 break;
             }

@@ -10,13 +10,16 @@ extern "C" {
         return bound;
     }
 
-    PointFilter2D *particlefilter2d_new(int n, float dispersion,
-                                         float inertia, Bounds2D *bound) {
-        return new PointFilter2D(n, dispersion, inertia, *bound);
+    PointFilter2D *particlefilter2d_new(int n, float inertia,
+                                         float dispersion, Bounds2D *bound) {
+        return new PointFilter2D(n, inertia, dispersion, *bound);
     }
 
     Beacon2D *beacon2d_new(const Bounds2D *bound, const PointFilter2D *filter) {
-        return new Beacon2D(*bound, *filter);
+        //std::cout << "creating beacon " << bound << " " << filter << "\n";
+        Beacon2D *b = new Beacon2D(*bound, *filter);
+        //std::cout << "created beacon " << b <<  "\n";
+        return b;
     }
 
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y) {

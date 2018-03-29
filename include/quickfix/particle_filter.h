@@ -26,7 +26,7 @@ class ParticleFilter : public FilterBase<F, D> {
     void shuffle();
     void perturb(F dT);
   public:
-    ParticleFilter(int n_, F disp, F inert, Bounds b) : FilterBase<F,D>(),
+    ParticleFilter(int n_, F inert, F disp, Bounds b) : FilterBase<F,D>(),
         N(n_), dispersion(disp), inertia(inert), bound(b) { Reset(); }
 
     void Reset();
@@ -38,9 +38,16 @@ class ParticleFilter : public FilterBase<F, D> {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::weigh(F dT, const Point &x) {
-    Weights dx = (P.rowwise() - x.matrix()).rowwise().norm();
-    Weights w = (dx.array() / (-2. * pow(inertia * dT, 2))).exp();
-    W = (w / w.sum()).matrix();
+    double variance = 2. * pow(inertia * dT, 2);
+    Weights dx_ = (P.rowwise() - x.matrix()).rowwise().norm();
+    Matrix<double, Dynamic, 1> dx = dx_.template cast<double>();
+    //std::cout << "dx: " << dx << "\n";
+
+    Matrix<double, Dynamic, 1> w = (-dx.array() / variance).exp();
+    //std::cout << "weights: " << w << "\n";
+    // FIXME: check for the situation where w.sum() == 0
+    W = (w / w.sum()).matrix().cast<F>();
+    //std::cout << "normalized: " << W << "\n";
 }
 
 template <typename F, int D>
@@ -48,29 +55,46 @@ void ParticleFilter<F,D>::shuffle() {
     int i = 0, j = 0;
     Particles p_ = P;
     while (i < N) {
-        while (i < N && rand() < W[j]) {
-            P.row(i)= p_.row(j);
-            i++;
+        // FIXME: this seems heavy handed
+        Weights select(N, 1);
+        select << Weights::Random(N, 1).array() * 0.5 + 0.5;
+        select -= W;
+        for (int j = 0; i < N && j < N; j++) {
+            //std::cout << i << ": " << j << " " << W[j] << " > " << select[j] << "\n";
+            if (select[j] < 0.) {
+                P.row(i)= p_.row(j);
+                i++;
+            }
         }
-        j = (j + 1) % N;
+        //j = (j + 1) % N;
     }
 }
 
 template <typename F, int D>
 void ParticleFilter<F,D>::perturb(F dT) {
+    // FIXME: this only works in 2D for now
     // z0 = sqrt(-2.0 * log(u1)) * cos(two_pi * u2);
-    Array<F, 1, D> u1 = Weights::Random(1, N).array() * 0.5 + 0.5,
-                   u2 = Weights::Random(1, N).array() * 0.5 + 0.5;
-    Array<F, 1, D> w = (u1.log() * -2.).sqrt() * (u2 * 2 * M_PI).cos();
-    W = (w * dispersion * dT).matrix();
+    Array<F, Dynamic, 1> u1 = Array<F, Dynamic, 1>::Random(N, 1) * 0.5 + 0.5,
+                         u2 = Array<F, Dynamic, 1>::Random(N, 1) * 0.5 + 0.5;
+    Array<F, Dynamic, 1> dx = (u1.log() * -2.).sqrt() * (u2 * 2 * M_PI).cos() * dispersion * dT,
+                         dy = (u2.log() * -2.).sqrt() * (u1 * 2 * M_PI).sin() * dispersion * dT;
+    Particles dP(N, D);
+    dP << dx, dy;
+    P = P + dP;
 }
 
 template <typename F, int D>
 void ParticleFilter<F,D>::Reset() {
     Array<F, 1, D> range = bound.row(1) - bound.row(0);
-    Array<F, Dynamic, D> particles = (Particles::Random(N, D).array() * 0.5 + 0.5) * range;
-    P = particles.matrix();
-    W = Weights::Zero(1, D);
+    // FIXME: clean all this up
+    Array<F, Dynamic, D> particles(N, D);
+    particles << (Particles::Random(N, D).array() * 0.5 + 0.5);
+    particles.col(0) = particles.col(0) * range(0) + bound(0, 0);
+    particles.col(1) = particles.col(1) * range(1) + bound(0, 1);
+    P.resize(N, D);
+    P << particles.matrix();
+    W.resize(N, 1);
+    W << Weights::Zero(N, 1);
 }
 
 template <typename F, int D>

@@ -44,11 +44,10 @@ class Environment(object):
         self.mse_target = rmse
         self.mean_readings = mean_readings
         self.anchors = np.random.uniform(bounds[0], bounds[1], (anchors, dim))
-        self.tag = Beacon2D(bounds)
+        self.tag = Beacon2D(bounds, 50, 3., 36.)
         self.target = Target(bounds=bounds, speed=target_speed)
         self.err = []
         self.rms = []
-        self.filter = ParticleFilter(3., 36., self.bounds, 100)
         
     def get_reading(self):
         i = np.random.choice(tuple(range(len(self.anchors))))
@@ -72,12 +71,14 @@ class Environment(object):
         pre_anchors = self.tag.anchors()
         
         ok = self.tag.update(tick, self.mse_target)
+        """
         if ok:
             self.filter.update(1., self.tag.position())
         else:
             self.filter.predict(1.)
         position = self.filter.position()
-        #position = self.tag.position()
+        """
+        position = self.tag.position()
         if position is None: return
         m_err = distance(self.target.position, self.tag.position())
         err = distance(self.target.position, position)
@@ -96,7 +97,7 @@ class Environment(object):
         self.tag.clear()
 
     def run(self, ticks, dump):
-        for t in range(ticks):
+        for t in range(1, ticks+1):
             self.run_tick(t, dump)
         return np.mean(self.err), np.std(self.err), np.mean(self.rms), np.std(self.rms)
 

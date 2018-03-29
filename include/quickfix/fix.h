@@ -105,14 +105,16 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
 template <typename F, int D>
 template <typename Solver>
 bool Beacon<F, D>::Update(F time, F rmsThreshold) {
-    if (A.rows() <= D + 1)
+    if (A.rows() <= D + 1) {
+        qfdebug("not enough readings for a fix");
         return false;
+    }
     Beacon b = Fix<Solver>(time, rmsThreshold);
     rmsThreshold *= rmsThreshold;
-    //std::cout << "A.rows=" << A.rows() << " b.Err=" << b.Err << " rmsThreshold:" << rmsThreshold << "\n";
     if (b.Err < rmsThreshold) {
-        Filter.Update(Time - time, b.X);
+        Filter.Update(time-Time, b.X);
         X = Filter.Position();
+        qfdebug("Δt=" << (time-Time) << ": " << X << " (" << Err << ") filtered vs " << b.X << " (" << b.Err << ") estimate on " << b.A.rows());
         clipToBound();
         Time = time;
         // FIXME: unclear when/how often we should throw away readings

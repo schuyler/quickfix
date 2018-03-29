@@ -119,5 +119,6 @@ class Beacon {
 #include "quickfix/range.h"
 #include "quickfix/difference.h"
 #include "quickfix/fix.h"
+#include "quickfix/particle_filter.h"
 
 #endif

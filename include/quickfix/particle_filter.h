@@ -52,7 +52,7 @@ void ParticleFilter<F,D>::weigh(F dT, const Point &x) {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::shuffle() {
-    int i = 0, j = 0;
+    int i = 0;
     Particles p_ = P;
     while (i < N) {
         // FIXME: this seems heavy handed
@@ -81,6 +81,9 @@ void ParticleFilter<F,D>::perturb(F dT) {
     Particles dP(N, D);
     dP << dx, dy;
     P = P + dP;
+    // FIXME: clipping should happen here
+    //P = P.cwiseMax(bound.row(0))
+    //     .cwiseMin(bound.row(1));
 }
 
 template <typename F, int D>

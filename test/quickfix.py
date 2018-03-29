@@ -3,7 +3,13 @@ from ctypes import *
 
 lib = cdll.LoadLibrary("../build/libquickfix.so")
 
-lib.beacon2d_new.argtypes = [c_float] * 4
+lib.bounds2d_new.argtypes = [c_float] * 4
+lib.bounds2d_new.restype = c_void_p
+
+lib.particlefilter2d_new.argtypes = [c_int, c_float, c_float, c_void_p]
+lib.particlefilter2d_new.restype = c_void_p
+
+lib.beacon2d_new.argtypes = [c_void_p, c_void_p]
 lib.beacon2d_new.restype = c_void_p
 
 lib.beacon2d_range.argtypes = [c_void_p, c_int, c_float]
@@ -37,10 +43,14 @@ lib.beacon2d_anchors.argtypes = [c_void_p]
 lib.beacon2d_anchors.restype = c_int
 
 class Beacon2D(object):
-    def __init__(self, bound):
+    def __init__(self, bound, n, inertia, dispersion):
         # bound is a pair of array-likes, min and max
+        # yeah this is a memory leak here
         bound = map(float, bound[0] + bound[1])
-        self.obj = lib.beacon2d_new(*bound)
+        bounds2d = lib.bounds2d_new(*bound)
+        # yeah this is a memory leak here too
+        pfilter = lib.particlefilter2d_new(n, inertia, dispersion, bounds2d)
+        self.obj = lib.beacon2d_new(bounds2d, pfilter)
 
     def range(self, id_, r):
         lib.beacon2d_range(self.obj, id_, float(r))

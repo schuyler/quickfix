@@ -55,7 +55,7 @@ template <typename F, int D>
 void Beacon<F,D>::clipToBound() {
     X = X.max(Bound.row(0).array())
          .min(Bound.row(1).array());
-    estimateError();
+    // estimateError();
 }
 
 template <typename F, int D>
@@ -111,19 +111,21 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold) {
     }
     Beacon b = Fix<Solver>(time, rmsThreshold);
     rmsThreshold *= rmsThreshold;
+    b.estimateError();
     if (b.Err < rmsThreshold) {
         Filter.Update(time-Time, b.X);
         X = Filter.Position();
+        //X = b.X;
         qfdebug("Δt=" << (time-Time) << ": " << X << " (" << Err << ") filtered vs " << b.X << " (" << b.Err << ") estimate on " << b.A.rows());
         clipToBound();
         Time = time;
-        // FIXME: unclear when/how often we should throw away readings
-        // *this = b;
-        // _or_
-        // Clear();
+        Err = b.Err;
+        Clear();
         return true;
+    } else {
+        Err = b.Err;
+        return false;
     }
-    return false;
 }
 
 #endif

@@ -11,7 +11,7 @@ extern "C" {
     Bounds2D *bounds2d_new(float minX, float minY, float maxX, float maxY);
 
     PointFilter2D *particlefilter2d_new(int n, float dispersion,
-                                         float inertia, Bounds2D *bound);
+                                         float momentum, Bounds2D *bound);
 
     Beacon2D *beacon2d_new(const Bounds2D *bound, const PointFilter2D *filter);
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y);

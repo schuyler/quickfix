@@ -37,14 +37,14 @@ class Target(object):
 
 class Environment(object):
     def __init__(self, bounds=[], anchors=7, sensor_noise=1., nlos_noise=1., rmse=18.,
-        mean_readings=4, target_speed=60., dim=2):
+        mean_readings=4, target_speed=60., momentum=1., dispersion=1., dim=2):
         self.bounds = bounds
         self.sensor_noise = sensor_noise
         self.nlos_noise = nlos_noise
         self.mse_target = rmse
         self.mean_readings = mean_readings
         self.anchors = np.random.uniform(bounds[0], bounds[1], (anchors, dim))
-        self.tag = Beacon2D(bounds, 50, 3., 36.)
+        self.tag = Beacon2D(bounds, 100, momentum, dispersion)
         self.target = Target(bounds=bounds, speed=target_speed)
         self.err = []
         self.rms = []
@@ -80,15 +80,14 @@ class Environment(object):
         """
         position = self.tag.position()
         if position is None: return
-        m_err = distance(self.target.position, self.tag.position())
         err = distance(self.target.position, position)
         rms = math.sqrt(self.tag.error())
         if dump: # and err > self.mse_target:
-            print "%6d X: %s X': %s | F_Err: %7.3f | MSE: %7.3f | M_Err: %7.3f | A: %2d(+%2d)/%2d %s" % (
+            print "%6d X: %s X': %s | Read: %8.3f | Actual: %8.3f | A: %2d(+%2d)/%2d %s" % (
                     tick,
                     self.target.position,
                     position,
-                    err, rms, m_err,
+                    rms, err,
                     pre_anchors, n, self.tag.anchors(),
                     ("✓" if ok else "𝙓"))
         if rms < 1e12:

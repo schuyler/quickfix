@@ -6,8 +6,10 @@ bounds:
       - 500.0
 anchors: 17
 mean_readings: 6
-sensor_noise: 6.0
-nlos_noise: 0.5
-rmse: 6.0
-target_speed: 30.0
+sensor_noise: 6.
+nlos_noise: 1.
+rmse: 6.
+momentum: 3.
+dispersion: 18.
+target_speed: 30.
 dump: true

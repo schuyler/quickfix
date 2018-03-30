@@ -43,13 +43,13 @@ lib.beacon2d_anchors.argtypes = [c_void_p]
 lib.beacon2d_anchors.restype = c_int
 
 class Beacon2D(object):
-    def __init__(self, bound, n, inertia, dispersion):
+    def __init__(self, bound, n, momentum, dispersion):
         # bound is a pair of array-likes, min and max
         # yeah this is a memory leak here
         bound = map(float, bound[0] + bound[1])
         bounds2d = lib.bounds2d_new(*bound)
         # yeah this is a memory leak here too
-        pfilter = lib.particlefilter2d_new(n, inertia, dispersion, bounds2d)
+        pfilter = lib.particlefilter2d_new(n, momentum, dispersion, bounds2d)
         self.obj = lib.beacon2d_new(bounds2d, pfilter)
 
     def range(self, id_, r):

@@ -10,9 +10,9 @@ extern "C" {
         return bound;
     }
 
-    PointFilter2D *particlefilter2d_new(int n, float inertia,
+    PointFilter2D *particlefilter2d_new(int n, float momentum,
                                          float dispersion, Bounds2D *bound) {
-        PointFilter2D *filter = new PointFilter2D(n, inertia, dispersion, *bound);
+        PointFilter2D *filter = new PointFilter2D(n, momentum, dispersion, *bound);
         return filter;
     }
 

@@ -19,7 +19,7 @@ class ParticleFilter : public FilterBase<F, D> {
 
     int N;
     F dispersion;
-    F inertia;
+    F momentum;
     Bounds bound;
 
     void weigh(F dT, const Point &x);
@@ -27,7 +27,7 @@ class ParticleFilter : public FilterBase<F, D> {
     void perturb(F dT);
   public:
     ParticleFilter(int n_, F inert, F disp, Bounds b) : FilterBase<F,D>(),
-        N(n_), dispersion(disp), inertia(inert), bound(b) { Reset(); }
+        N(n_), dispersion(disp), momentum(inert), bound(b) { Reset(); }
 
     void Reset();
     void Reset(const Point &p) { Reset(); }
@@ -38,7 +38,7 @@ class ParticleFilter : public FilterBase<F, D> {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::weigh(F dT, const Point &x) {
-    double variance = 2. * pow(inertia * dT, 2);
+    double variance = 2. * pow(momentum * dT, 2);
     Weights dx_ = (P.rowwise() - x.matrix()).rowwise().norm();
     Matrix<double, Dynamic, 1> dx = dx_.template cast<double>();
     //std::cout << "dx: " << dx << "\n";

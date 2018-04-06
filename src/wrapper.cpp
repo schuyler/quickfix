@@ -1,7 +1,6 @@
 #include "quickfix.h"
 
 template class Beacon<float, 2>;
-// template class Beacon<float, 3>;
 
 extern "C" {
     Bounds2D *bounds2d_new(float minX, float minY, float maxX, float maxY) {
@@ -10,14 +9,20 @@ extern "C" {
         return bound;
     }
 
-    PointFilter2D *particlefilter2d_new(int n, float momentum,
+    ParticleFilter2D *particlefilter2d_new(int n, float momentum,
                                          float dispersion, Bounds2D *bound) {
-        PointFilter2D *filter = new PointFilter2D(n, momentum, dispersion, *bound);
+        ParticleFilter2D *filter = new ParticleFilter2D(n, momentum, dispersion, *bound);
         return filter;
     }
 
-    Beacon2D *beacon2d_new(const Bounds2D *bound, const PointFilter2D *filter) {
-        Beacon2D *b = new Beacon2D(*bound, *filter);
+    Beacon2D *beacon2d_new(const Bounds2D *bound, const ParticleFilter2D *filter) {
+        Beacon2D *b;
+        if (filter != NULL) {
+            b = new Beacon2D(*bound, *filter);
+        } else {
+            IdentityFilter<float, 2> ifilter;
+            b = new Beacon2D(*bound, ifilter);
+        }
         return b;
     }
 

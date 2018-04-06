@@ -22,13 +22,13 @@ class FilterBase {
 template <typename F, int D>
 class IdentityFilter : public FilterBase<F,D> {
     typedef typename FilterBase<F,D>::Point Point;
-    const Point &X;
+    Point X;
   public:
-    IdentityFilter() {}
+    IdentityFilter() { X = Point::Zero(1, D); }
     void Reset() {}
     void Reset(const Point &p) { X = p; }
-    inline bool Update(const F dT, const Point &p) { X = p; }
-    bool Update(const F dT) {};
+    inline bool Update(const F dT, const Point &p) { X = p; return true; }
+    bool Update(const F dT) { return true; };
     inline const Point &Position() { return X; }
 };
 

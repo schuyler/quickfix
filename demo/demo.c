@@ -2,6 +2,8 @@
 #include "quickfix.h"
 #include "math.h"
 
+#define USE_PARTICLE_FILTER
+
 int main(int argc, char **argv) {
     if (argc < 2) {
         printf("Supply a data file");
@@ -16,7 +18,14 @@ int main(int argc, char **argv) {
     
     const float maxX = 350., maxY = 350;
     Bounds2D *bound = bounds2d_new(0., 0., maxX, maxY);
-    PointFilter2D *filter = particlefilter2d_new(10, 3., 6., bound);
+
+    ParticleFilter2D *filter;
+#ifdef USE_PARTICLE_FILTER
+    filter = particlefilter2d_new(10, 3., 6., bound);
+#else
+    filter = NULL;
+#endif
+
     Beacon2D *b = beacon2d_new(bound, filter);
     float x, y, z, dd;
     const float maxError = 100.;

@@ -27,7 +27,7 @@ class Beacon {
     typedef Matrix<F, Dynamic, 1> Ranges;
     typedef std::vector<Beacon> Container;
     typedef std::priority_queue<Beacon, Container, std::greater<Beacon> > Heap;
-    typedef ParticleFilter<F, D> PointFilter;
+    typedef FilterBase<F, D> PointFilter;
 
     struct RangeSolver {
         const Beacon &B;
@@ -91,9 +91,6 @@ class Beacon {
     void clipToBound();
   public:
     Beacon(const Bounds b, const PointFilter f, F t=0.) : Bound(b), Time(t), Filter(f) {
-        init();
-    }
-    Beacon(const Bounds b) : Bound(b), Filter(50, 1., 1., b) {
         init();
     }
     void init() {

@@ -4,7 +4,11 @@
 #include <math.h>
 #include "quickfix.h"
 
-#define USE_PARTICLE_FILTER
+float get_clock_tick() {
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    return (float)t.tv_sec + ((float) t.tv_nsec /  1e9);
+}
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -25,17 +29,17 @@ int main(int argc, char **argv) {
     Bounds2D *bound = bounds2d_new(0., 0., maxX, maxY);
 
     ParticleFilter2D *filter;
-#ifdef USE_PARTICLE_FILTER
-    filter = particlefilter2d_new(10, 3., 6., bound);
-#else
+#ifdef DISABLE_PARTICLE_FILTER
     filter = NULL;
+#else
+    filter = particlefilter2d_new(10, 3., 6., bound);
 #endif
 
     Beacon2D *b = beacon2d_new(bound, filter);
     float x, y, z, dd;
     const float maxError = 100.;
     const float multiPath = sqrt(maxX*maxX + maxY+maxY);
-    int tick = 0;
+    float tick = 0.0;
 
     while (fscanf(in, "%f %f %f %f", &x, &y, &z, &dd) != EOF) {
         if (dd >= multiPath) {
@@ -44,6 +48,10 @@ int main(int argc, char **argv) {
             printf("in : %9.3f %9.3f %9.3f\n", x, y, dd);
             beacon2d_reading(b, x, y, dd);
         } else {
+            // If running in real time:
+            //   tick = get_clock_tick();
+            // Because demo:
+            tick += 1.0;
             bool ok = beacon2d_update(b, tick, maxError, 0);
             float x = beacon2d_x(b),
                   y = beacon2d_y(b),
@@ -51,7 +59,6 @@ int main(int argc, char **argv) {
             printf("%s: %9.3f %9.3f %9.3f\n----\n",
                     (ok ? "out" : "nop"),
                     x, y, sqrt(err));
-            tick++;
         }
     }
 }

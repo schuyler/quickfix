@@ -2,6 +2,7 @@ EIGEN_INCLUDE=$(shell pkg-config --cflags eigen3)
 CXX_INCLUDES=$(EIGEN_INCLUDE) -Iinclude
 CXX_FLAGS=-MMD -Wall
 CXX_FLAGS+=-DNDEBUG -Ofast
+# CXX_FLAGS+=-DDISABLE_PARTICLE_FILTER
 # -march=native works great on MacOS but gets a little weird on Linux?
 # CXX_FLAGS += -march=native
 

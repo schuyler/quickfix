@@ -22,8 +22,8 @@ extern "C" {
     float beacon2d_y(Beacon2D *b);
     float beacon2d_error(Beacon2D *b);
     int beacon2d_anchors(Beacon2D *b);
-    void beacon2d_fix(Beacon2D *b, float tick, float rmsError);
-    bool beacon2d_update(Beacon2D *b, float tick, float rmsThreshold);
+    void beacon2d_fix(Beacon2D *b, float tick, float rmsError, int tries);
+    bool beacon2d_update(Beacon2D *b, float tick, float rmsThreshold, int tries);
 }
 
 #endif

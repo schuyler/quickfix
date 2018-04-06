@@ -24,10 +24,10 @@ lib.beacon2d_reading.restype = None
 lib.beacon2d_clear.argtypes = [c_void_p]
 lib.beacon2d_clear.restype = None
 
-lib.beacon2d_fix.argtypes = [c_void_p, c_float, c_float]
+lib.beacon2d_fix.argtypes = [c_void_p, c_float, c_float, c_int]
 lib.beacon2d_fix.restype = None
 
-lib.beacon2d_update.argtypes = [c_void_p, c_float, c_float]
+lib.beacon2d_update.argtypes = [c_void_p, c_float, c_float, c_int]
 lib.beacon2d_update.restype = c_bool
 
 lib.beacon2d_x.argtypes = [c_void_p]
@@ -64,12 +64,12 @@ class Beacon2D(object):
     def clear(self):
         lib.beacon2d_clear(self.obj)
 
-    def fix(self, tick, rms_err):
-        lib.beacon2d_fix(self.obj, tick, rms_err)
+    def fix(self, tick, rms_err, tries=0):
+        lib.beacon2d_fix(self.obj, tick, rms_err, tries)
         return self.position(), self.error()
 
-    def update(self, tick, rms_err):
-        return lib.beacon2d_update(self.obj, tick, rms_err)
+    def update(self, tick, rms_err, tries=0):
+        return lib.beacon2d_update(self.obj, tick, rms_err, tries)
 
     def position(self):
         x = lib.beacon2d_x(self.obj)

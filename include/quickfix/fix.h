@@ -68,7 +68,7 @@ void Beacon<F, D>::dropRow(T &x, int i) {
 
 template <typename F, int D>
 template <typename Solver>
-Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
+Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError, int maxTries) const {
     F mseTarget = rmsError * rmsError;
     Beacon best = *this;
     Heap heap;
@@ -76,7 +76,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
     best.estimatePosition<Solver>(time);
     heap.push(best);
 
-    while (!heap.empty()) {
+    for (int tries = 0; !heap.empty() && (maxTries <= 0 || tries < maxTries); tries++) {
         Beacon b = heap.top();
         // std::cout << b.A.rows << ": " << b.X << " (" << b.Err << ")\n";
         heap.pop();
@@ -89,10 +89,7 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
             dropRow<Anchors>(next.A, drop);
             dropRow<Ranges>(next.R, drop);
             next.estimatePosition<Solver>(time);
-
-            //if (next < best) {
-                heap.push(next);
-            //}
+            heap.push(next);
             if (next.Err <= mseTarget) {
                 break;
             }
@@ -104,12 +101,12 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError) const {
 
 template <typename F, int D>
 template <typename Solver>
-bool Beacon<F, D>::Update(F time, F rmsThreshold) {
+bool Beacon<F, D>::Update(F time, F rmsThreshold, int maxTries) {
     if (A.rows() <= D + 1) {
         qfdebug("not enough readings for a fix");
         return false;
     }
-    Beacon b = Fix<Solver>(time, rmsThreshold);
+    Beacon b = Fix<Solver>(time, rmsThreshold, maxTries);
     rmsThreshold *= rmsThreshold;
     b.estimateError();
     if (b.Err < rmsThreshold) {

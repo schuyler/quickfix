@@ -114,10 +114,10 @@ class Beacon {
     void Clear(void);
 
     template <typename Solver>
-    Beacon Fix(F time, F rmsError) const;
+    Beacon Fix(F time, F rmsError, int maxTries) const;
 
     template <typename Solver>
-    bool Update(F time, F rmsThreshold);
+    bool Update(F time, F rmsThreshold, int maxTries);
 
     const Anchors &AnchorMatrix() const { return A; }
     const Ranges &RangeVector() const { return R; }

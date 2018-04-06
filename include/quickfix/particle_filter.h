@@ -31,9 +31,9 @@ class ParticleFilter : public FilterBase<F, D> {
 
     void Reset();
     void Reset(const Point &p) { Reset(); }
-    bool Update(const F dT, const Point &p);
+    bool Update(const F dT, const Point &p) override;
     bool Update(const F dT);
-    const Point &Position() { return X; }
+    const Point &Position() override { return X; }
 };
 
 template <typename F, int D>

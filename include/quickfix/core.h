@@ -71,7 +71,7 @@ class Beacon {
     F Err;
     F Time;
     bool Located;
-    PointFilter Filter;
+    PointFilter *Filter;
 
     void checkSize(int i);
     int findRow(const Point &anchor) const;
@@ -90,7 +90,7 @@ class Beacon {
     void estimateError();
     void clipToBound();
   public:
-    Beacon(const Bounds b, const PointFilter f, F t=0.) : Bound(b), Time(t), Filter(f) {
+    Beacon(const Bounds b,  PointFilter *f, F t=0.) : Bound(b), Time(t), Filter(f) {
         init();
     }
     void init() {

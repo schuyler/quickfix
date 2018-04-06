@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
 #include "quickfix.h"
-#include "math.h"
 
 #define USE_PARTICLE_FILTER
 
@@ -15,6 +17,9 @@ int main(int argc, char **argv) {
         printf("Can't open %s\n", argv[1]);
         return -1;
     }
+
+    // Seed C stdlib random number generator
+    srand(time(NULL));
     
     const float maxX = 350., maxY = 350;
     Bounds2D *bound = bounds2d_new(0., 0., maxX, maxY);

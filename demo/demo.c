@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
             printf("in : %9.3f %9.3f %9.3f\n", x, y, dd);
             beacon2d_reading(b, x, y, dd);
         } else {
-            bool ok = beacon2d_update(b, tick, maxError);
+            bool ok = beacon2d_update(b, tick, maxError, 0);
             float x = beacon2d_x(b),
                   y = beacon2d_y(b),
                   err = beacon2d_error(b);

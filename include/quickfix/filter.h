@@ -12,6 +12,7 @@ class FilterBase {
     typedef Array<F, 2, D> Bounds;
 
     // FIXME: these methods should be pure virtual
+    virtual ~FilterBase() {}
     virtual void Reset() {}
     virtual void Reset(const Point &p) {}
     virtual bool Update(const F dT, const Point &p) {

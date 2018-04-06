@@ -93,6 +93,13 @@ class Beacon {
     Beacon(const Bounds b,  PointFilter *f, F t=0.) : Bound(b), Time(t), Filter(f) {
         init();
     }
+    ~Beacon() {
+        /** FIXME: This throws an error; needs to be fixed
+        if (Filter != NULL) {
+            delete Filter;
+        }
+        */
+    }
     void init() {
         Err = std::numeric_limits<F>::infinity();
         Located = false;

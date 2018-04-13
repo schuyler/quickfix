@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
             //   tick = get_clock_tick();
             // Because demo:
             tick += 1.0;
-            bool ok = beacon2d_update(b, tick, maxError, 0);
+            bool ok = beacon2d_update(b, tick, maxError, 100);
             float x = beacon2d_x(b),
                   y = beacon2d_y(b),
                   err = beacon2d_error(b);
@@ -64,4 +64,5 @@ int main(int argc, char **argv) {
             beacon2d_clear(b);
         }
     }
+    beacon2d_delete(b);
 }

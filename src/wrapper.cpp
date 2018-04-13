@@ -16,14 +16,13 @@ extern "C" {
     }
 
     Beacon2D *beacon2d_new(const Bounds2D *bound, ParticleFilter2D *filter) {
-        Beacon2D *b;
-        if (filter != NULL) {
-            b = new Beacon2D(*bound, filter);
-        } else {
-            IdentityFilter<float, 2> *ifilter = new IdentityFilter<float, 2>;
-            b = new Beacon2D(*bound, ifilter);
+        return new Beacon2D(*bound, filter);
+    }
+
+    void beacon2d_delete(Beacon2D *b) {
+        if (b != NULL) {
+            delete b;
         }
-        return b;
     }
 
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y) {

@@ -113,9 +113,12 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold, int maxTries) {
     rmsThreshold *= rmsThreshold;
     b.estimateError();
     if (b.Err < rmsThreshold) {
-        Filter->Update(time-Time, b.X);
-        X = Filter->Position();
-        //X = b.X;
+        if (Filter != NULL) {
+            Filter->Update(time-Time, b.X);
+            X = Filter->Position();
+        } else {
+            X = b.X;
+        }
         qfdebug("Δt=" << (time-Time) << ": " << X << " (" << Err << ") filtered vs " << b.X << " (" << b.Err << ") estimate on " << b.A.rows());
         clipToBound();
         Time = time;

@@ -14,6 +14,7 @@ extern "C" {
                                          float momentum, Bounds2D *bound);
 
     Beacon2D *beacon2d_new(const Bounds2D *bound, ParticleFilter2D *filter);
+    void beacon2d_delete(Beacon2D *b);
     void beacon2d_anchor(Beacon2D *b, int id, float x, float y);
     void beacon2d_range(Beacon2D *b, int id, float r);
     void beacon2d_reading(Beacon2D *b, float x, float y, float r);

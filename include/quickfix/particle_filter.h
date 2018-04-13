@@ -52,7 +52,7 @@ void ParticleFilter<F,D>::weigh(F dT, const Point &x) {
 
 template <typename F, int D>
 void ParticleFilter<F,D>::shuffle() {
-    int i = 0;
+    int i = 0, total = 0;
     Particles p_ = P;
     while (i < N) {
         // FIXME: this seems heavy handed
@@ -65,9 +65,11 @@ void ParticleFilter<F,D>::shuffle() {
                 P.row(i)= p_.row(j);
                 i++;
             }
+            total++;
         }
         //j = (j + 1) % N;
     }
+    qfdebug("Particle shuffle took " << total << " iterations");
 }
 
 template <typename F, int D>

@@ -72,29 +72,32 @@ Beacon<F, D> Beacon<F, D>::Fix(F time, F rmsError, int maxTries) const {
     F mseTarget = rmsError * rmsError;
     Beacon best = *this;
     Heap heap;
+    int tries;
 
     best.estimatePosition<Solver>(time);
     heap.push(best);
 
-    for (int tries = 0; !heap.empty() && (maxTries <= 0 || tries < maxTries); tries++) {
+    for (tries = 0; !heap.empty() && (maxTries <= 0 || tries < maxTries);) {
         Beacon b = heap.top();
-        // std::cout << b.A.rows << ": " << b.X << " (" << b.Err << ")\n";
+        //qfdebug("Fix: " << b.A.rows() << ": " << b.X << " (" << b.Err << ")");
         heap.pop();
-        if (b < best) best = b;
         if (b.Err <= mseTarget) break;
         if (b.A.rows() <= D + 2) continue;
 
-        for (int drop = 0; drop < b.A.rows(); drop++) {
+        for (int drop = 0; drop < b.A.rows() && (maxTries <= 0 || tries < maxTries); drop++, tries++) {
             Beacon next = b;
             dropRow<Anchors>(next.A, drop);
             dropRow<Ranges>(next.R, drop);
             next.estimatePosition<Solver>(time);
             heap.push(next);
             if (next.Err <= mseTarget) {
+                b = next;
                 break;
             }
         }
+        if (b < best) best = b;
     }
+    qfdebug("Fix took " << tries << " of " <<  maxTries << " tries using " << best.A.rows() << " of " <<  A.rows() << " anchors");
     best.clipToBound();
     return best;
 }
@@ -103,7 +106,7 @@ template <typename F, int D>
 template <typename Solver>
 bool Beacon<F, D>::Update(F time, F rmsThreshold, int maxTries) {
     if (A.rows() <= D + 1) {
-        qfdebug("not enough readings for a fix");
+        qfdebug("Not enough readings for a fix");
         return false;
     }
     Beacon b = Fix<Solver>(time, rmsThreshold, maxTries);
@@ -120,6 +123,7 @@ bool Beacon<F, D>::Update(F time, F rmsThreshold, int maxTries) {
         Clear();
         return true;
     } else {
+        qfdebug("MSE " << b.Err << " exceeded threshold " << rmsThreshold);
         Err = b.Err;
         return false;
     }
